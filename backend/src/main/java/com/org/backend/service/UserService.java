@@ -5,6 +5,7 @@ import com.org.backend.dto.LoginRequestDto;
 import com.org.backend.dto.LoginResponseDto;
 import com.org.backend.entity.User;
 import com.org.backend.enums.UserStatus;
+import com.org.backend.exception.UnauthorizedException;
 import com.org.backend.repository.UserRepository;
 import com.org.backend.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -26,27 +27,17 @@ public class UserService {
                 .orElse(null);
 
         if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())){
-            return new LoginResponseDto(
-                    false,
-                    "Invalid username or password",
-                    null,
-                    null
-            );
+            throw new UnauthorizedException("Invalid username or password");
         }
 
-        if (user.getStatus() != UserStatus.ACTIVE){
-            return new LoginResponseDto(
-                    false,
-                    "User account is not active",
-                    null,
-                    null
-            );
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new UnauthorizedException("Account status is not active");
         }
 
         String token = jwtService.generateToken(user);
 
         return new LoginResponseDto(
-                true,
+                200,
                 "Login success",
                 token,
                 mapUserToCurrentUserDto(user)

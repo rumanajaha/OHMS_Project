@@ -1,7 +1,7 @@
 package com.org.backend.dto;
 
 public record LoginResponseDto(
-        boolean success,
+        int status,
         String message,
         String token,
         CurrentUserDto user
