@@ -2,10 +2,13 @@ package com.org.backend.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,6 +21,26 @@ public class GlobalExceptionHandler {
                 exception.getStatus(),
                 exception.getErrorCode(),
                 exception.getMessage(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handle404Exception(NoResourceFoundException exception){
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                "NOT_FOUND",
+                "Not Found",
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleMissingBody(HttpMessageNotReadableException ex) {
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                "BAD_REQUEST",
+                "Request body is missing or invalid",
                 Map.of()
         );
     }
@@ -43,7 +66,7 @@ public class GlobalExceptionHandler {
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "INTERNAL_ERROR",
-                exception.getMessage(),
+                "Something went wrong",
                 Map.of()
         );
     }
