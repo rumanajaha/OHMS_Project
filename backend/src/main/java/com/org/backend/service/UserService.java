@@ -5,10 +5,12 @@ import com.org.backend.dto.LoginRequestDto;
 import com.org.backend.dto.LoginResponseDto;
 import com.org.backend.entity.User;
 import com.org.backend.enums.UserStatus;
+import com.org.backend.exception.ApiException;
 import com.org.backend.exception.UnauthorizedException;
 import com.org.backend.repository.UserRepository;
 import com.org.backend.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +44,17 @@ public class UserService {
                 token,
                 mapUserToCurrentUserDto(user)
         );
+    }
+
+    public CurrentUserDto me(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(
+                        HttpStatus.NOT_FOUND,
+                        "NOT_FOUND",
+                        "User not found")
+                );
+
+        return mapUserToCurrentUserDto(user);
     }
 
     private CurrentUserDto mapUserToCurrentUserDto(User user){
