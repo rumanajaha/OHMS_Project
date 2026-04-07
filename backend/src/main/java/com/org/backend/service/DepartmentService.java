@@ -2,11 +2,13 @@ package com.org.backend.service;
 
 import com.org.backend.dto.DepartmentCreateRequestDto;
 import com.org.backend.dto.DepartmentDto;
+import com.org.backend.dto.DepartmentParentUpdateRequestDto;
 import com.org.backend.dto.DepartmentUpdateRequestDto;
 import com.org.backend.entity.Department;
 import com.org.backend.entity.Employee;
 import com.org.backend.repository.DepartmentRepository;
 import com.org.backend.repository.EmployeeRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +30,7 @@ public class DepartmentService {
         return departments.stream().map(this::mapToDto).toList();
     }
 
-    public DepartmentDto getDepartment(Long departmentId) {
+    public DepartmentDto getDepartmentById(Long departmentId) {
 
         Department department = departmentRepository
                 .findById(departmentId)
@@ -92,6 +94,35 @@ public class DepartmentService {
 
             department.setHeadEmployee(headEmployee);
         }
+
+        department = departmentRepository.save(department);
+        return mapToDto(department);
+    }
+
+    @Transactional
+    public void deleteDepartment(Long departmentId){
+
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid department id"));
+
+        // soft delete logic in future
+        departmentRepository.delete(department);
+    }
+
+    @Transactional
+    public DepartmentDto changeDepartmentParent(
+            Long departmentId,
+            DepartmentParentUpdateRequestDto request
+    ) {
+        Department department = departmentRepository
+                .findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid department id"));
+
+        Department parentDepartment = departmentRepository
+                .findById(request.parentId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Parent department id"));
+
+        department.setParentDepartment(parentDepartment);
 
         department = departmentRepository.save(department);
         return mapToDto(department);
