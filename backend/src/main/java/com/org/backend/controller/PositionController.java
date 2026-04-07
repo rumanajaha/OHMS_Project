@@ -6,6 +6,7 @@ import com.org.backend.dto.PositionUpdateRequestDto;
 import com.org.backend.service.PositionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,5 +41,13 @@ public class PositionController {
             @Valid @RequestBody PositionUpdateRequestDto request
     ){
         return positionService.update(positionId, request);
+    }
+
+    @DeleteMapping("/{positionId")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long positionId
+    ){
+        positionService.delete(positionId);
+        return ResponseEntity.noContent().build();
     }
 }

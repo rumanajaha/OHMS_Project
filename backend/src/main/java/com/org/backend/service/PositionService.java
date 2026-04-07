@@ -85,6 +85,16 @@ public class PositionService {
         return mapToDto(position);
     }
 
+    @Transactional
+    public void delete(Long positionId) {
+
+        Position position = positionRepository
+                .findById(positionId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid position id"));
+
+        positionRepository.delete(position);
+    }
+
     private PositionDto mapToDto(Position position){
 
         Long parentPositionId = position.getParentPosition() != null
@@ -98,4 +108,5 @@ public class PositionService {
                 parentPositionId
         );
     }
+
 }
