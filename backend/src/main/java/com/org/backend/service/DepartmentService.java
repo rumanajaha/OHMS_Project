@@ -97,6 +97,16 @@ public class DepartmentService {
         return mapToDto(department);
     }
 
+    @Transactional
+    public void delete(Long departmentId){
+
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid department id"));
+
+        // soft delete logic in future
+        departmentRepository.delete(department);
+    }
+
     public DepartmentDto mapToDto(Department department){
         return new DepartmentDto(
                 department.getId(),

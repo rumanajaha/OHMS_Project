@@ -6,6 +6,8 @@ import com.org.backend.dto.DepartmentUpdateRequestDto;
 import com.org.backend.service.DepartmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,5 +44,14 @@ public class DepartmentController {
             @PathVariable Long departmentId
     ){
         return departmentService.getDepartment(departmentId);
+    }
+
+    @DeleteMapping("/{departmentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> deleteDepartment(
+            @PathVariable Long departmentId
+    ){
+        departmentService.delete(departmentId);
+        return ResponseEntity.noContent().build();
     }
 }
