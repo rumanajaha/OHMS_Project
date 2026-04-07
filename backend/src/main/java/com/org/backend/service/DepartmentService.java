@@ -28,7 +28,7 @@ public class DepartmentService {
         return departments.stream().map(this::mapToDto).toList();
     }
 
-    public DepartmentDto getDepartment(Long departmentId) {
+    public DepartmentDto getDepartmentById(Long departmentId) {
 
         Department department = departmentRepository
                 .findById(departmentId)
@@ -98,7 +98,7 @@ public class DepartmentService {
     }
 
     @Transactional
-    public void delete(Long departmentId){
+    public void deleteDepartment(Long departmentId){
 
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid department id"));

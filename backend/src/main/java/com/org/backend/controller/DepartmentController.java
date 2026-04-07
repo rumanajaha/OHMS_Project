@@ -40,10 +40,10 @@ public class DepartmentController {
     }
 
     @GetMapping("/{departmentId}")
-    public DepartmentDto getDepartment(
+    public DepartmentDto getDepartmentById(
             @PathVariable Long departmentId
     ){
-        return departmentService.getDepartment(departmentId);
+        return departmentService.getDepartmentById(departmentId);
     }
 
     @DeleteMapping("/{departmentId}")
@@ -51,7 +51,7 @@ public class DepartmentController {
     public ResponseEntity<Void> deleteDepartment(
             @PathVariable Long departmentId
     ){
-        departmentService.delete(departmentId);
+        departmentService.deleteDepartment(departmentId);
         return ResponseEntity.noContent().build();
     }
 }

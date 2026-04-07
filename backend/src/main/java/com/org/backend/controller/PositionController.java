@@ -19,20 +19,20 @@ public class PositionController {
     private final PositionService positionService;
 
     @GetMapping
-    public List<PositionDto> getAll(){
-        return positionService.getAll();
+    public List<PositionDto> getAllPositions(){
+        return positionService.getAllPositions();
     }
 
     @PostMapping
-    public PositionDto create(
+    public PositionDto createPosition(
             @Valid @RequestBody PositionCreateRequestDto request
     ){
-        return positionService.create(request);
+        return positionService.createPosition(request);
     }
 
     @GetMapping("/{positionId}")
-    public PositionDto getPosition(@PathVariable Long positionId){
-        return positionService.get(positionId);
+    public PositionDto getPositionById(@PathVariable Long positionId){
+        return positionService.getPositionById(positionId);
     }
 
     @PutMapping("/{positionId}")
@@ -40,14 +40,14 @@ public class PositionController {
             @PathVariable Long positionId,
             @Valid @RequestBody PositionUpdateRequestDto request
     ){
-        return positionService.update(positionId, request);
+        return positionService.updatePosition(positionId, request);
     }
 
-    @DeleteMapping("/{positionId")
+    @DeleteMapping("/{positionId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long positionId
     ){
-        positionService.delete(positionId);
+        positionService.deletePosition(positionId);
         return ResponseEntity.noContent().build();
     }
 }

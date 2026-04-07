@@ -21,14 +21,14 @@ public class PositionService {
     private final PositionRepository positionRepository;
     private final DepartmentRepository departmentRepository;
 
-    public List<PositionDto> getAll() {
+    public List<PositionDto> getAllPositions() {
 
         List<Position> positions = positionRepository.findAll();
         return positions.stream().map(this::mapToDto).toList();
     }
 
     @Transactional
-    public PositionDto create(@Valid PositionCreateRequestDto request) {
+    public PositionDto createPosition(@Valid PositionCreateRequestDto request) {
 
         Position position = new Position();
         position.setTitle(request.title());
@@ -50,7 +50,7 @@ public class PositionService {
         return mapToDto(position);
     }
 
-    public PositionDto get(Long positionId) {
+    public PositionDto getPositionById(Long positionId) {
 
         Position position = positionRepository
                 .findById(positionId)
@@ -60,7 +60,7 @@ public class PositionService {
     }
 
     @Transactional
-    public PositionDto update(Long positionId, PositionUpdateRequestDto request) {
+    public PositionDto updatePosition(Long positionId, PositionUpdateRequestDto request) {
 
         Position position = positionRepository
                 .findById(positionId)
@@ -86,7 +86,7 @@ public class PositionService {
     }
 
     @Transactional
-    public void delete(Long positionId) {
+    public void deletePosition(Long positionId) {
 
         Position position = positionRepository
                 .findById(positionId)
