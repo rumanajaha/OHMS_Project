@@ -2,6 +2,7 @@ package com.org.backend.controller;
 
 import com.org.backend.dto.DepartmentCreateRequestDto;
 import com.org.backend.dto.DepartmentDto;
+import com.org.backend.dto.DepartmentParentUpdateRequestDto;
 import com.org.backend.dto.DepartmentUpdateRequestDto;
 import com.org.backend.service.DepartmentService;
 import jakarta.validation.Valid;
@@ -53,5 +54,13 @@ public class DepartmentController {
     ){
         departmentService.deleteDepartment(departmentId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{departmentId}/parent")
+    public DepartmentDto changeDepartmentParent(
+            @PathVariable Long departmentId,
+            @Valid @RequestBody DepartmentParentUpdateRequestDto request
+    ){
+        return departmentService.changeDepartmentParent(departmentId, request);
     }
 }
