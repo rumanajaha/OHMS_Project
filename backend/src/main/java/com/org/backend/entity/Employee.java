@@ -45,11 +45,19 @@ public class Employee {
     private Position position;
 
     @JsonIgnore
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    @JsonIgnore
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private Employee manager;
 
     @JsonIgnore
+    @ToString.Exclude
     @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
     private List<Employee> subordinates;
 
