@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class DepartmentController {
         return departmentService.getAllDepartments();
     }
 
+    @PreAuthorize("hasAuthority('DEPARTMENT_CREATE')")
     @PostMapping
     public DepartmentDto createDepartment(
             @Valid @RequestBody DepartmentCreateRequestDto request
@@ -32,6 +34,7 @@ public class DepartmentController {
         return departmentService.createDepartment(request);
     }
 
+    @PreAuthorize("hasAuthority('DEPARTMENT_UPDATE')")
     @PutMapping("/{departmentId}")
     public DepartmentDto updateDepartment(
             @PathVariable Long departmentId,
@@ -40,13 +43,7 @@ public class DepartmentController {
         return departmentService.updateDepartment(departmentId, request);
     }
 
-    @GetMapping("/{departmentId}")
-    public DepartmentDto getDepartmentById(
-            @PathVariable Long departmentId
-    ){
-        return departmentService.getDepartmentById(departmentId);
-    }
-
+    @PreAuthorize("hasAuthority('DEPARTMENT_UPDATE')")
     @DeleteMapping("/{departmentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deleteDepartment(
@@ -56,11 +53,19 @@ public class DepartmentController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAuthority('DEPARTMENT_UPDATE')")
     @PatchMapping("/{departmentId}/parent")
     public DepartmentDto changeDepartmentParent(
             @PathVariable Long departmentId,
             @Valid @RequestBody DepartmentParentUpdateRequestDto request
     ){
         return departmentService.changeDepartmentParent(departmentId, request);
+    }
+
+    @GetMapping("/{departmentId}")
+    public DepartmentDto getDepartmentById(
+            @PathVariable Long departmentId
+    ){
+        return departmentService.getDepartmentById(departmentId);
     }
 }

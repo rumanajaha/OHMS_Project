@@ -3,6 +3,7 @@ package com.org.backend.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -32,6 +33,16 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 "BAD_REQUEST",
                 exception.getMessage(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(AuthorizationDeniedException exception){
+        return buildResponse(
+                HttpStatus.FORBIDDEN,
+                "FORBIDDEN",
+                "Access denied",
                 Map.of()
         );
     }
