@@ -1,5 +1,7 @@
 package com.org.backend.security;
 
+import com.org.backend.config.RolePermissionMapper;
+import com.org.backend.enums.Permission;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -25,6 +28,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final RolePermissionMapper permissionMapper;
 
     @Override
     protected void doFilterInternal(
@@ -47,12 +51,23 @@ public class JwtFilter extends OncePerRequestFilter {
 
             Long userId = Long.valueOf(claims.getSubject());
             List<String> roles = claims.get("roles", List.class);
+            List<String> permissions = permissionMapper.getPermissions(roles);
 
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                List<GrantedAuthority> authorities = roles.stream()
-                        .map(role -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + role))
-                        .toList();
+                List<GrantedAuthority> authorities = new ArrayList<>();
+
+                authorities.addAll(
+                        roles.stream()
+                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                                .toList()
+                );
+
+                authorities.addAll(
+                        permissions.stream()
+                                .map(SimpleGrantedAuthority::new)
+                                .toList()
+                );
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
