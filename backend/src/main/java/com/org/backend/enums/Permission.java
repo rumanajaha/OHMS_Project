@@ -1,0 +1,14 @@
+package com.org.backend.enums;
+
+public enum Permission {
+    DEPARTMENT_CREATE,
+    DEPARTMENT_UPDATE,
+    POSITION_CREATE,
+    POSITION_UPDATE,
+    EMPLOYEE_CREATE,
+    EMPLOYEE_UPDATE,
+    EMPLOYEE_VIEW_TEAM,
+    EMPLOYEE_VIEW_SELF,
+    HIERARCHY_VIEW,
+    HIERARCHY_EDIT
+}

@@ -24,14 +24,4 @@ public class Role {
 
     private String description;
 
-    @JsonIgnore
-    @ToString.Exclude
-    @ManyToMany
-    @JoinTable(
-            name = "role_permissions",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id")
-    )
-    private Set<Permission> permissions = new HashSet<>();
-
 }

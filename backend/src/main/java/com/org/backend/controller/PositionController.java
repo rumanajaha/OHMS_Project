@@ -7,6 +7,7 @@ import com.org.backend.service.PositionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class PositionController {
         return positionService.getAllPositions();
     }
 
+    @PreAuthorize("hasAuthority('POSITION_CREATE')")
     @PostMapping
     public PositionDto createPosition(
             @Valid @RequestBody PositionCreateRequestDto request
@@ -35,6 +37,7 @@ public class PositionController {
         return positionService.getPositionById(positionId);
     }
 
+    @PreAuthorize("hasAuthority('POSITION_UPDATE')")
     @PutMapping("/{positionId}")
     public PositionDto getPosition(
             @PathVariable Long positionId,
@@ -43,6 +46,7 @@ public class PositionController {
         return positionService.updatePosition(positionId, request);
     }
 
+    @PreAuthorize("hasAuthority('POSITION_UPDATE')")
     @DeleteMapping("/{positionId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long positionId
