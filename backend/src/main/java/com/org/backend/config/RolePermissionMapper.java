@@ -20,6 +20,8 @@ public class RolePermissionMapper {
                     Permission.EMPLOYEE_UPDATE,
                     Permission.EMPLOYEE_VIEW_TEAM,
                     Permission.EMPLOYEE_VIEW_SELF,
+                    Permission.EMPLOYEE_VIEW_ALL,
+                    Permission.EMPLOYEE_SEARCH,
                     Permission.HIERARCHY_VIEW,
                     Permission.HIERARCHY_EDIT
             ),
