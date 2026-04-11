@@ -17,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/departments")
+@PreAuthorize("isAuthenticated()")
 public class DepartmentController {
 
     private final DepartmentService departmentService;
