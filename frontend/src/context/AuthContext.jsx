@@ -21,35 +21,47 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (username, password) => {  
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password }),
+        body: JSON.stringify({ username, password }),   
       });
+
       const data = await response.json();
+
       if (!response.ok || data.status !== 200) {
         throw new Error(data.message || 'Login failed');
       }
+
       if (data.token) {
         localStorage.setItem('authToken', data.token);
       }
+
+      
       const loggedInUser = {
-        id: data.user?.id?.toString() || email,
-        name: data.user?.name || email.split('@')[0],
-        email: data.user?.email || email,
-        role: data.user?.role || 'Employee',
-        departmentId: data.user?.departmentId || undefined,
-        avatar: data.user?.avatar || undefined,
+        id: data.user?.userId?.toString() || username,        
+        name: data.user?.fullName || data.user?.username || username,
+        email: data.user?.email || '',
+        role: data.user?.designation || 'Employee',             
+        departmentId: data.user?.departmentName ? undefined : undefined, 
+        
+        userId: data.user?.userId,
+        employeeId: data.user?.employeeId,
+        username: data.user?.username,
+        fullName: data.user?.fullName,
+        designation: data.user?.designation,
+        departmentName: data.user?.departmentName,
       };
 
       setUser(loggedInUser);
       localStorage.setItem('authUser', JSON.stringify(loggedInUser));
+
     } catch (err) {
       setIsLoading(false);
-      throw err; 
+      throw err;
     }
     setIsLoading(false);
   };
@@ -108,6 +120,7 @@ export const useAuth = () => {
 };
 
 export const getAuthToken = () => localStorage.getItem('authToken');
+
 export const authFetch = (url, options = {}) => {
   const token = getAuthToken();
   return fetch(url, {
