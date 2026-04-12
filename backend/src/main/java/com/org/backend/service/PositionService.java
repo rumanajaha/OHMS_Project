@@ -104,6 +104,7 @@ public class PositionService {
         return new PositionDto(
                 position.getId(),
                 position.getTitle(),
+                position.getPositionCode(),
                 position.getDepartment().getId(),
                 parentPositionId
         );

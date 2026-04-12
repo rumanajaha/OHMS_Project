@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/employees")
+@PreAuthorize("isAuthenticated()")
 public class EmployeeController {
 
     private final EmployeeService employeeService;

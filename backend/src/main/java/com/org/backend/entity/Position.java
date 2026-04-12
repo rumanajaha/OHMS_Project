@@ -26,6 +26,9 @@ public class Position {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false, unique = true)
+    private String positionCode;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
