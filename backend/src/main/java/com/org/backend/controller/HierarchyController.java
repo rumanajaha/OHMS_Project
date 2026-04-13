@@ -20,6 +20,7 @@ public class HierarchyController {
     public List<HierarchyNodeDto> getTree(){
         return hierarchyService.getFullHierarchy();
     }
+    @PreAuthorize("hasAuthority('HIERARCHY_EDIT')")
     @PatchMapping("/position/{positionId}/parent/{parentId}")
     public void movePosition(
             @PathVariable Long positionId,
