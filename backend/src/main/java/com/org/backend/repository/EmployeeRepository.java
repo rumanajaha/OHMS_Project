@@ -3,6 +3,7 @@ package com.org.backend.repository;
 import com.org.backend.entity.Employee;
 import com.org.backend.enums.EmployeeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,4 +22,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     long countByStatus(EmployeeStatus status);
     long countByPositionId(Long positionId);
     long countByManagerId(Long managerId);
+
+    @Query("SELECT COUNT(DISTINCT e.manager.id) FROM Employee e WHERE e.manager IS NOT NULL")
+    long countManagers();
 }
