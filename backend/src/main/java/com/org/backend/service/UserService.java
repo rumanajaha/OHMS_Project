@@ -60,6 +60,7 @@ public class UserService {
     private CurrentUserDto mapUserToCurrentUserDto(User user){
         return new CurrentUserDto(
                 user.getId(),
+                user.getUserRole().toString(),
                 user.getEmployee().getId(),
                 user.getUsername(),
                 user.getEmployee().getFullName(),

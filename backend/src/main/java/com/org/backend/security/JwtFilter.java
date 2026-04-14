@@ -50,18 +50,14 @@ public class JwtFilter extends OncePerRequestFilter {
             Claims claims = jwtService.validateToken(token);
 
             Long userId = Long.valueOf(claims.getSubject());
-            List<String> roles = claims.get("roles", List.class);
-            List<String> permissions = permissionMapper.getPermissions(roles);
+            String role = claims.get("role", String.class);
+            List<String> permissions = permissionMapper.getPermissions(role);
 
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 List<GrantedAuthority> authorities = new ArrayList<>();
 
-                authorities.addAll(
-                        roles.stream()
-                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                                .toList()
-                );
+                authorities.add( new SimpleGrantedAuthority("ROLE_" + role));
 
                 authorities.addAll(
                         permissions.stream()

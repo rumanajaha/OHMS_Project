@@ -1,6 +1,5 @@
 package com.org.backend.config;
 
-import com.org.backend.entity.Role;
 import com.org.backend.enums.Permission;
 import org.springframework.stereotype.Component;
 
@@ -50,14 +49,7 @@ public class RolePermissionMapper {
     );
 
 
-    public List<String> getPermissions(List<String> roles){
-        return roles.stream()
-                .flatMap(role -> ROLE_PERMISSIONS
-                        .getOrDefault(role, List.of())
-                        .stream()
-                )
-                .map(Enum::name)
-                .distinct()
-                .toList();
+    public List<String> getPermissions(String role){
+        return ROLE_PERMISSIONS.get(role).stream().map(Enum::toString).toList();
     }
 }

@@ -1,10 +1,9 @@
 package com.org.backend.config;
 
 import com.org.backend.entity.Employee;
-import com.org.backend.entity.Role;
 import com.org.backend.entity.User;
+import com.org.backend.enums.UserRoleType;
 import com.org.backend.repository.EmployeeRepository;
-import com.org.backend.repository.RoleRepository;
 import com.org.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +18,6 @@ public class DataInitializer {
 
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
-    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${admin.password}")
@@ -39,14 +37,9 @@ public class DataInitializer {
             user.setUsername("admin");
             user.setPasswordHash(passwordEncoder.encode(adminPassword));
             user.setEmployee(adminEmployee);
+            user.setUserRole(UserRoleType.ADMIN);
+
             user = userRepository.save(user);
-
-            Role adminRole = roleRepository
-                    .findById(1L)
-                    .orElseThrow(()-> new IllegalArgumentException("No admin role found"));
-
-            user.getRoles().add(adminRole);
-            userRepository.save(user);
 
             System.out.println("Admin user created");
         };

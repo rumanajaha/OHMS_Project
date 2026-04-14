@@ -139,7 +139,7 @@ export const EmployeeDetail = () => {
               gap: '1rem',
             }}
           >
-            {user?.role !== 'Employee' && (
+            {user?.role !== 'EMPLOYEE' && (
               <button
                 className="btn btn-primary"
                 onClick={() => navigate(`/admin/employees/edit/${employee.id}`)}

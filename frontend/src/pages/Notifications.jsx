@@ -11,7 +11,7 @@ export const Notifications = () => {
 
   const [activeReplyId, setActiveReplyId] = useState(null);
   const [replyText, setReplyText] = useState('');
-  const basePath = user?.role === 'Manager' || user?.role === 'Admin' ? '/manager' : '/employee';
+  const basePath = user?.role === 'MANAGER' || user?.role === 'ADMIN' ? '/manager' : '/employee';
 
   const getIcon = (type) => {
     switch (type) {
