@@ -105,18 +105,24 @@ public class EmployeeService {
         List<Employee> employees = employeeRepository.findByManagerId(managerId);
         return employees.stream().map(this::mapToDto).toList();
     }
-    public List<EmployeeDto> searchEmployees( Long departmentId, Long positionId, EmployeeStatus status ){
+    public List<EmployeeDto> searchEmployees(String name, Long departmentId, Long positionId,Long managerId, EmployeeStatus status){
         List<Employee> employees = employeeRepository.findAll();
+        if (name!=null && !name.isBlank()){
+            employees = employeeRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name,name);
+        }else{ employees = employeeRepository.findAll();}
         if(departmentId != null){
             employees = employees.stream().filter(e -> e.getDepartment() != null &&  e.getDepartment().getId().equals(departmentId)).toList(); }
         if(positionId != null){
             employees = employees.stream().filter(e -> e.getPosition() != null &&  e.getPosition().getId().equals(positionId)).toList();
         }
+        if(managerId!=null){ employees = employees.stream().filter(e->e.getManager()!=null && e.getManager().getId().equals(managerId)).toList();}
         if(status != null){
             employees = employees.stream().filter(e -> e.getStatus() == status).toList();
-        }
-        return employees.stream().map(this::mapToDto).toList();
+
+
     }
-}
+        return employees.stream().map(this::mapToDto).toList();
+
+}}
 
 

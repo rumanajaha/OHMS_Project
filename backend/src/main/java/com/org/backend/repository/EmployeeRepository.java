@@ -21,4 +21,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     long countByStatus(EmployeeStatus status);
     long countByPositionId(Long positionId);
     long countByManagerId(Long managerId);
+    List<Employee> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
 }
