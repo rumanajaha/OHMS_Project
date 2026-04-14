@@ -40,15 +40,14 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('authToken', data.token);
       }
 
+      console.log(data);
       
       const loggedInUser = {
-        id: data.user?.userId?.toString() || username,        
+        id: data.user?.userId?.toString(),        
         name: data.user?.fullName || data.user?.username || username,
         email: data.user?.email || '',
-        role: data.user?.designation || 'Employee',             
-        departmentId: data.user?.departmentName ? undefined : undefined, 
-        
-        userId: data.user?.userId,
+        role: data.user?.role || 'EMPLOYEE',             
+        departmentId: data.user?.departmentName ? undefined : undefined,         
         employeeId: data.user?.employeeId,
         username: data.user?.username,
         fullName: data.user?.fullName,
@@ -84,11 +83,11 @@ export const AuthProvider = ({ children }) => {
 
   const hasPermission = (permission) => {
     if (!user) return false;
-    if (user.role === 'Admin') return true;
-    if (user.role === 'Manager') {
+    if (user.role === 'ADMIN') return true;
+    if (user.role === 'MANAGER') {
       return ['view_team', 'edit_team', 'view_departments'].includes(permission);
     }
-    if (user.role === 'Employee') {
+    if (user.role === 'EMPLOYEE') {
       return ['view_self', 'edit_self'].includes(permission);
     }
     return false;

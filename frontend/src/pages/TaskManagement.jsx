@@ -38,7 +38,7 @@ export const TaskManagement = () => {
   };
 
   const columns = ['To Do', 'In Progress', 'Completed'];
-  const basePath = user?.role === 'Manager' || user?.role === 'Admin' ? '/manager' : '/employee';
+  const basePath = user?.role === 'MANAGER' || user?.role === 'ADMIN' ? '/manager' : '/employee';
 
   return (
     <div className="animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
