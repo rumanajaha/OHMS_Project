@@ -1,14 +1,12 @@
 package com.org.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.org.backend.enums.UserRoleType;
 import com.org.backend.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -35,13 +33,7 @@ public class User  {
     @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.ACTIVE;
 
-    @JsonIgnore
-    @ToString.Exclude
-    @ManyToMany
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles = new HashSet<>();
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRoleType userRole;
 }

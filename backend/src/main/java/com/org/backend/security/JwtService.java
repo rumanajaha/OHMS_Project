@@ -1,6 +1,5 @@
 package com.org.backend.security;
 
-import com.org.backend.entity.Role;
 import com.org.backend.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -27,11 +26,7 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(user.getId().toString())
                 .claim("employeeId", user.getEmployee().getId())
-                .claim("roles", user.getRoles()
-                        .stream()
-                        .map(Role::getName)
-                        .toList()
-                )
+                .claim("role", user.getUserRole().toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 15 * 60 * 1000))
                 .signWith(key)
