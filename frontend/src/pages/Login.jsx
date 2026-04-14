@@ -38,16 +38,35 @@ export const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // React.useEffect(() => {
+  //   if (!isLoading && isAuthenticated) {
+  //     const from = location.state?.from?.pathname;
+  //     if (from && from !== '/login') {
+  //       navigate(from, { replace: true });
+  //     } else {
+  //       navigate('/admin/dashboard', { replace: true });
+  //     }
+  //   }
+  // }, [isAuthenticated, isLoading, navigate, location]);
   React.useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      const from = location.state?.from?.pathname;
-      if (from && from !== '/login') {
-        navigate(from, { replace: true });
-      } else {
-        navigate('/admin/dashboard', { replace: true });
+  
+      const storedUser = JSON.parse(localStorage.getItem("authUser"));
+      const role = storedUser?.role;
+      if (role === "ADMIN") {
+        navigate("/admin/dashboard", { replace: true });
+      } 
+      else if (role === "MANAGER") {
+        navigate("/manager/dashboard", { replace: true });
+      } 
+      else if (role === "EMPLOYEE") {
+        navigate("/employee/dashboard", { replace: true });
+      } 
+      else {
+        navigate("/login");
       }
     }
-  }, [isAuthenticated, isLoading, navigate, location]);
+  }, [isAuthenticated, isLoading]);
 
   if (isLoading) {
     return (

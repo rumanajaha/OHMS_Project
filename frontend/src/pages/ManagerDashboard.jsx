@@ -86,7 +86,7 @@ export const ManagerDashboard = () => {
         </div>
       </div>
 
-      <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+      {/* <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
         <div className="card" style={{ padding: '1.25rem', borderLeft: '4px solid var(--success)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
             <UserCheck size={16} className="text-success" />
@@ -108,7 +108,7 @@ export const ManagerDashboard = () => {
           </div>
           <div className="h2">{leaveCount}</div>
         </div>
-      </div>
+      </div> */}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
         <div className="card" style={{ padding: 0 }}>
