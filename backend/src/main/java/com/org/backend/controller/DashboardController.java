@@ -1,8 +1,8 @@
 package com.org.backend.controller;
 
-import com.org.backend.dto.CurrentUserDto;
+import com.org.backend.dto.dashboard.DashboardDto;
 import com.org.backend.security.CustomUserPrincipal;
-import com.org.backend.service.UserService;
+import com.org.backend.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,19 +10,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequiredArgsConstructor
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/dashboard")
 @PreAuthorize("isAuthenticated()")
-public class UserController {
+@RequiredArgsConstructor
+public class DashboardController {
 
-    private final UserService userService;
+    private final DashboardService dashboardService;
 
-    @GetMapping("/me")
-    public CurrentUserDto me(
-            @AuthenticationPrincipal CustomUserPrincipal user
+    @GetMapping
+    public DashboardDto getDashboardData(
+            @AuthenticationPrincipal CustomUserPrincipal userPrincipal
     ){
-        return userService.me(user.getUserId());
+        return dashboardService.getDashboardData(userPrincipal);
     }
-
 }

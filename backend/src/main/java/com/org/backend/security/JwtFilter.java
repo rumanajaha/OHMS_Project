@@ -51,6 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             Long userId = Long.valueOf(claims.getSubject());
             String role = claims.get("role", String.class);
+            Long employeeId = claims.get("employeeId", Long.class);
             List<String> permissions = permissionMapper.getPermissions(role);
 
             if (SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -67,7 +68,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                userId,
+                                new CustomUserPrincipal(userId, role, employeeId),
                                 null,
                                 authorities
                         );
