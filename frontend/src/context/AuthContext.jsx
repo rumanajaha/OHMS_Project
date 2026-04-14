@@ -43,10 +43,11 @@ export const AuthProvider = ({ children }) => {
       console.log(data);
       
       const loggedInUser = {
-        id: data.user?.userId?.toString(),        
+        id: data.user?.id?.toString(),  
+        role: data.user.role,   
         name: data.user?.fullName || data.user?.username || username,
         email: data.user?.email || '',
-        role: data.user?.role || 'EMPLOYEE',             
+        
         departmentId: data.user?.departmentName ? undefined : undefined,         
         employeeId: data.user?.employeeId,
         username: data.user?.username,
