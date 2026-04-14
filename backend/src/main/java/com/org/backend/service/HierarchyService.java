@@ -50,6 +50,7 @@ public class HierarchyService {
                 .toList();
     }
 
+
     private HierarchyNodeDto buildTree(
             Position position,
             Map<Long, List<Position>> childrenMap,
@@ -82,5 +83,22 @@ public class HierarchyService {
         node.setChildren(children);
 
         return node;
+    }
+    public void movePosition(Long positionId, Long parentId) {
+        Position position = positionRepository.findById(positionId).orElseThrow(() -> new RuntimeException("Position not found"));
+        Position parent = positionRepository.findById(parentId).orElseThrow(() -> new RuntimeException("Parent position not found"));
+        if (position.getId().equals(parentId)) {
+            throw new RuntimeException("Position cannot be its own parent");
+        }
+        // circular hierarchy
+        Position curr = parent;
+        while (curr != null) {
+            if (curr.getId().equals(positionId)) {
+                throw new RuntimeException("Circular hierarchy detected");
+            }
+            curr = curr.getParentPosition();
+        }
+        position.setParentPosition(parent);
+        positionRepository.save(position);
     }
 }

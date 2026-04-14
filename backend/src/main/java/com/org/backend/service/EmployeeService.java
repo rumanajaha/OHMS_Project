@@ -86,8 +86,7 @@ public class EmployeeService {
         employee.setHireDate(request.hireDate());
         Position position = positionRepository.findById(request.positionId()).orElseThrow(() -> new IllegalArgumentException("Invalid position id"));
         employee.setPosition(position);
-        Department department = departmentRepository.findById(request.departmentId()).orElseThrow(() -> new IllegalArgumentException("Invalid department id"));
-        employee.setDepartment(department);
+        employee.setDepartment(position.getDepartment());
         if(request.managerId() != null){
             Employee manager = employeeRepository.findById(request.managerId()).orElseThrow(() -> new IllegalArgumentException("Invalid manager id"));
             employee.setManager(manager); }
