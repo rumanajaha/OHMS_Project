@@ -54,7 +54,7 @@ export const MyTeam = () => {
           <div style={{ width: '2px', height: '20px', background: 'var(--border-color)', margin: '0 auto' }} />
         )}
 
-        {/* Team Members */}
+      
         <div style={{ display: 'flex', gap: '2rem', marginTop: myTeam.length > 1 ? '20px' : '0' }}>
           {myTeam.map((member) => (
             <div key={member.id} className="card" style={{ width: '220px', textAlign: 'center', borderTop: '4px solid var(--secondary)' }}>

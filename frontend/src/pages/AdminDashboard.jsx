@@ -76,7 +76,7 @@ export const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Activity & Notifications */}
+      
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div className="card">
             <h2 className="h3" style={{ marginBottom: '1.5rem' }}>Notifications</h2>

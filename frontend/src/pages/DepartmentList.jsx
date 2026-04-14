@@ -230,7 +230,7 @@ export const DepartmentList = () => {
         </div>
       </div>
 
-      {/* Side Detail Panel */}
+   
       {selectedDept && detailDept && (
         <div
           style={{
