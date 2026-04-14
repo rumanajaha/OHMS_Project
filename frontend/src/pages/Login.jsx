@@ -53,9 +53,6 @@ export const Login = () => {
   
       const storedUser = JSON.parse(localStorage.getItem("authUser"));
       const role = storedUser?.role;
-  
-      console.log("ROLE AFTER LOGIN:", role); 
-  
       if (role === "ADMIN") {
         navigate("/admin/dashboard", { replace: true });
       } 
