@@ -192,7 +192,7 @@ export const DepartmentList = () => {
               </div>
 
               <h3 className="h3" style={{ marginBottom: '0.25rem' }}>{dept.name}</h3>
-              <p className="text-sm text-muted" style={{ marginBottom: '1.25rem' }}>Code: {dept.departmentCode}</p>
+              <p className="text-sm text-muted" style={{ marginBottom: '1.25rem' }}>Code: {dept.code}</p>
 
               <div
                 style={{

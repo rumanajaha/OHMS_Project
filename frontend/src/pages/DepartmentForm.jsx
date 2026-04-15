@@ -25,7 +25,7 @@ export const DepartmentForm = () => {
       const dept = departments.find((d) => d.id == id);
 
       if (dept) {
-        setFormData({ name: dept.name, code: dept.departmentCode, headEmployeeId: dept.headEmployeeId || '' });
+        setFormData({ name: dept.name, code: dept.code, headEmployeeId: dept.headEmployeeId || '' });
         const existingEmps = employees.filter((e) => e.departmentId === id).map((e) => e.id);
         setSelectedEmployees(existingEmps);
       }
@@ -61,13 +61,13 @@ export const DepartmentForm = () => {
         await addDepartment({
           id: targetDeptId,
           name: formData.name,
-          departmentCode: formData.code,
+          code: formData.code,
           headEmployeeId: formData.headEmployeeId || undefined,
         });
       } else if (targetDeptId) {
         await updateDepartment(targetDeptId, {
           name: formData.name,
-          departmentCode: formData.code,
+          code: formData.code,
           headEmployeeId: formData.headEmployeeId || undefined,
         });
       }

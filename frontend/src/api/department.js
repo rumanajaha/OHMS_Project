@@ -3,7 +3,7 @@ import {apiClient} from "./client";
 const PREFIX = "/departments";
 
 export const getDepartmentsApi = ()=>{
-    return apiClient(PREFIX)
+    return apiClient(PREFIX);
 }
 
 export const createDepartmentApi = (deptData)=>{
@@ -23,5 +23,5 @@ export const updateDepartmentApi = (depId, depData)=>{
 export const deleteDepartmentApi = (depId)=>{
     return apiClient(`${PREFIX}/${depId}`, {
         method: "DELETE"
-    })
+    });
 }

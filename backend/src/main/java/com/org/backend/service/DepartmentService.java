@@ -45,7 +45,7 @@ public class DepartmentService {
 
         Department department = new Department();
         department.setName(request.name());
-        department.setDepartmentCode(request.departmentCode());
+        department.setDepartmentCode(request.code());
 
         if (request.parentDepartmentId() != null){
             Department parentDepartment = departmentRepository
@@ -78,7 +78,7 @@ public class DepartmentService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid department id"));
 
         department.setName(request.name());
-        department.setDepartmentCode(request.departmentCode());
+        department.setDepartmentCode(request.code());
 
         if (request.parentDepartmentId() != null){
             Department parentDepartment = departmentRepository

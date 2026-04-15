@@ -8,7 +8,7 @@ public record DepartmentUpdateRequestDto(
         String name,
 
         @NotBlank(message = "Enter valid department code")
-        String departmentCode,
+        String code,
 
         Long parentDepartmentId,
         Long headEmployeeId

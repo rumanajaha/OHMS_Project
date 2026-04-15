@@ -3,7 +3,7 @@ package com.org.backend.dto;
 public record DepartmentDto(
         Long id,
         String name,
-        String departmentCode,
+        String code,
         Long parentDepartmentId,
         EmployeeDto head
 ) {
