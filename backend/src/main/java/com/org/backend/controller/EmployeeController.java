@@ -64,7 +64,7 @@ public class EmployeeController {
 
     @PreAuthorize("hasAuthority('EMPLOYEE_SEARCH')")
     @GetMapping("/search")
-    public List<EmployeeDto> searchEmployees(@RequestParam(required = false) Long departmentId, @RequestParam(required = false) Long positionId, @RequestParam(required = false) EmployeeStatus status){
-        return employeeService.searchEmployees(departmentId, positionId, status);
+    public List<EmployeeDto> searchEmployees(@RequestParam(required = false) String name, @RequestParam(required = false) Long departmentId,@RequestParam(required = false) String departmentName,  @RequestParam(required = false) Long positionId,@RequestParam(required = false) String positionTitle, @RequestParam(required = false) Long managerId, @RequestParam(required = false) EmployeeStatus status){
+        return employeeService.searchEmployees(name,departmentId,departmentName, positionId,positionTitle,managerId, status);
     }
 }

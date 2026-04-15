@@ -22,6 +22,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     long countByStatus(EmployeeStatus status);
     long countByPositionId(Long positionId);
     long countByManagerId(Long managerId);
+    List<Employee> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
 
     @Query("SELECT COUNT(DISTINCT e.manager.id) FROM Employee e WHERE e.manager IS NOT NULL")
     long countManagers();
