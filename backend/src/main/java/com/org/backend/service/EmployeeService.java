@@ -43,7 +43,7 @@ public class EmployeeService {
         employee = employeeRepository.save(employee);
         return mapToDto(employee); }
 
-    private EmployeeDto mapToDto(Employee employee) {
+    EmployeeDto mapToDto(Employee employee) {
         return new EmployeeDto(
                 employee.getId(),
                 employee.getEmployeeCode(),

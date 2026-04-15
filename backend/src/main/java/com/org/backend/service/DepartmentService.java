@@ -21,6 +21,7 @@ public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
 
     public List<DepartmentDto> getAllDepartments(){
 
@@ -133,7 +134,8 @@ public class DepartmentService {
                 department.getId(),
                 department.getName(),
                 department.getDepartmentCode(),
-                department.getParentDepartment() != null ? department.getParentDepartment().getId() : null
+                department.getParentDepartment() != null ? department.getParentDepartment().getId() : null,
+                department.getHeadEmployee() != null ? employeeService.mapToDto(department.getHeadEmployee()) : null
         );
     }
 }
