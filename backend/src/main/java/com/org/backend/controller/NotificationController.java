@@ -1,6 +1,7 @@
 package com.org.backend.controller;
 
 import com.org.backend.dto.NotificationDto;
+import com.org.backend.security.CustomUserPrincipal;
 import com.org.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,17 +22,17 @@ public class NotificationController {
 
     @GetMapping
     public List<NotificationDto> getAllNotifications(
-            @AuthenticationPrincipal Long userId
+            @AuthenticationPrincipal CustomUserPrincipal user
     ){
-        return notificationService.getAllNotifications(userId);
+        return notificationService.getAllNotifications(user.getUserId());
     }
 
     @PutMapping("{id}/read")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void markAsRead(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal CustomUserPrincipal user,
             @PathVariable Long id){
-        notificationService.markAsRead(id, userId);
+        notificationService.markAsRead(id, user.getUserId());
     }
 
 }
