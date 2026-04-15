@@ -170,7 +170,7 @@ export const DepartmentList = () => {
                       setDropdownOpen(null);
                     }}
                   >
-                    Delete Context
+                    Delete Department
                   </button>
                 </div>
               )}
@@ -192,7 +192,7 @@ export const DepartmentList = () => {
               </div>
 
               <h3 className="h3" style={{ marginBottom: '0.25rem' }}>{dept.name}</h3>
-              <p className="text-sm text-muted" style={{ marginBottom: '1.25rem' }}>Code: {dept.code}</p>
+              <p className="text-sm text-muted" style={{ marginBottom: '1.25rem' }}>Code: {dept.departmentCode}</p>
 
               <div
                 style={{
@@ -246,9 +246,9 @@ export const DepartmentList = () => {
         >
           <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
             <h3 className="h2" style={{ marginBottom: '0.25rem' }}>{detailDept.name}</h3>
-            <span className="badge badge-neutral text-xs">
+            {/* <span className="badge badge-neutral text-xs">
               Created: {new Date(detailDept.createdAt).toLocaleDateString()}
-            </span>
+            </span> */}
           </div>
 
           <div style={{ padding: '1.5rem', flex: 1, overflowY: 'auto' }}>

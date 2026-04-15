@@ -1,60 +1,77 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createDepartmentApi, deleteDepartmentApi, getDepartmentsApi, updateDepartmentApi } from '../api/department';
+import { useAuth } from './AuthContext';
 
 const DepartmentContext = createContext(undefined);
 
-const initialDepartments = [
-  { id: 'd1', name: 'Engineering', code: 'ENG', createdAt: new Date().toISOString() },
-  { id: 'd2', name: 'Frontend', code: 'ENG-FE', parentDepartmentId: 'd1', createdAt: new Date().toISOString() },
-  { id: 'd3', name: 'Human Resources', code: 'HR', createdAt: new Date().toISOString() },
-];
 
 export const DepartmentProvider = ({ children }) => {
-  const [departments, setDepartments] = useState(initialDepartments);
+  const { isAuthenticated } = useAuth();
+  const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('mock_departments');
-    if (saved) {
-      try {
-        setDepartments(JSON.parse(saved));
-      } catch (e) {
-        localStorage.removeItem('mock_departments');
-      }
+  const fetchDepartments = async ()=>{
+    setIsLoading(true);
+
+    try{
+      const data = await getDepartmentsApi();
+      setDepartments(data);
+    }catch(err){
+      console.error("Failed to fetch departments", err);
+    }finally{
+      setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    localStorage.setItem('mock_departments', JSON.stringify(departments));
+    if (isAuthenticated) {
+      fetchDepartments();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem('departments', JSON.stringify(departments));
   }, [departments]);
 
   const addDepartment = async (dept) => {
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 500));
-    setDepartments((prev) => [
-      ...prev,
-      {
-        ...dept,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date().toISOString(),
-      },
-    ]);
-    setIsLoading(false);
+
+    try{
+      const newDept = await createDepartmentApi(dept);
+      setDepartments((prev) => [...prev, newDept]);
+    }catch(err){
+      console.log("Failed to create Department", err);
+    }finally{
+      setIsLoading(false);
+    }
   };
 
   const updateDepartment = async (id, updates) => {
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 500));
-    setDepartments((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, ...updates } : d))
-    );
-    setIsLoading(false);
+    try{
+      const updatedDep = await updateDepartmentApi(id, updates);
+      setDepartments((prev) =>
+        prev.map((d) => (d.id == id ? { ...d, ...updates } : d))
+      );
+    }catch(err){
+      console.log("Failed to update Department", err);
+    }finally{
+      setIsLoading(false);
+    }
+
   };
 
   const deleteDepartment = async (id) => {
+    console.log("delete", id);
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 500));
-    setDepartments((prev) => prev.filter((d) => d.id !== id));
-    setIsLoading(false);
+    try{
+      await deleteDepartmentApi(id);
+      setDepartments((prev) => prev.filter((d) => d.id != id));
+    }catch(err){
+      console.log("Failed to delete Department", err);
+    }finally{
+      setIsLoading(false);
+    }
   };
 
   const getDepartmentById = (id) => departments.find((d) => d.id === id);
