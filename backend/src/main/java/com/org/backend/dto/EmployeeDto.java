@@ -16,5 +16,6 @@ public record EmployeeDto(
         Long positionId,
         Long departmentId,
         Long managerId,
-        EmployeeStatus status
+        EmployeeStatus status,
+        String role
 ) {}

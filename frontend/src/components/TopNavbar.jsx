@@ -120,7 +120,7 @@ export const TopNavbar = () => {
                 color: 'var(--text-main)',
                 lineHeight: 1.2
               }}>
-                {user?.name}
+                {user?.fullName}
               </span>
 
               <span style={{

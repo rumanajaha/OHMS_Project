@@ -38,6 +38,9 @@ public class Employee {
 
     private LocalDate hireDate;
 
+    @OneToOne(mappedBy = "employee",cascade = CascadeType.ALL, orphanRemoval = true)
+    private User user;
+
     @JsonIgnore
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)

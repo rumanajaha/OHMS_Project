@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { loginApi } from '../api/auth';
 
 const AuthContext = createContext(undefined);
-
-const API_BASE = 'http://localhost:8080';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -23,16 +22,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {  
     setIsLoading(true);
+    
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),   
-      });
+      const data = await loginApi(username, password);
 
-      const data = await response.json();
-
-      if (!response.ok || data.status !== 200) {
+      if (data.status !== 200) {
         throw new Error(data.message || 'Login failed');
       }
 
@@ -40,8 +34,6 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('authToken', data.token);
       }
 
-      console.log(data);
-      
       const loggedInUser = {
         id: data.user?.id?.toString(),  
         role: data.user.role,   
@@ -82,6 +74,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('authToken');
   };
 
+  useEffect(() => {
+    const handleLogout = () => logout();
+
+    window.addEventListener("unauthorized", handleLogout);
+
+    return () => {
+      window.removeEventListener("unauthorized", handleLogout);
+    };
+  }, []);
+
   const hasPermission = (permission) => {
     if (!user) return false;
     if (user.role === 'ADMIN') return true;
@@ -120,15 +122,3 @@ export const useAuth = () => {
 };
 
 export const getAuthToken = () => localStorage.getItem('authToken');
-
-export const authFetch = (url, options = {}) => {
-  const token = getAuthToken();
-  return fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-  });
-};

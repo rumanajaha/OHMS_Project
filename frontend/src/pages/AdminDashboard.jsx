@@ -1,15 +1,20 @@
 import React from 'react';
 import { useEmployees } from '../context/EmployeeContext';
 import { useDepartments } from '../context/DepartmentContext';
+import { usePositions } from '../context/PositionContext';
 import { Users, Building, Activity, CheckSquare, Network } from 'lucide-react';
+import { isManagerialPosition } from '../utils/org';
 
 export const AdminDashboard = () => {
   const { employees } = useEmployees();
   const { departments } = useDepartments();
+  const { positions } = usePositions();
 
-  const managersCount = employees.filter(e =>
-    e.designation.toLowerCase().includes('manager')
-  ).length;
+  // const managersCount = employees.filter((employee) =>
+  //   isManagerialPosition(positions.find((position) => position.id == employee.positionId)?.title)
+  // ).length;
+
+  const managersCount = 0;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

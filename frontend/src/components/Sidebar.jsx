@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Users, LogOut, Menu, X, CheckSquare,
-  Settings, Network, Grid, FileText, Bell
+  Settings, Network, Grid, FileText, Bell, Briefcase
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -23,6 +23,7 @@ export const Sidebar = () => {
     { to: '/admin/hierarchy', icon: <Network size={18} />, label: 'Hierarchy Map' },
     { to: '/admin/employees', icon: <Users size={18} />, label: 'Employees' },
     { to: '/admin/departments', icon: <Grid size={18} />, label: 'Departments' },
+    { to: '/admin/positions', icon: <Briefcase size={18} />, label: 'Positions' },
     { to: '/admin/tasks', icon: <CheckSquare size={18} />, label: 'Tasks' },
     { to: '/admin/documents', icon: <FileText size={18} />, label: 'Documents' },
     { to: '/admin/notifications', icon: <Bell size={18} />, label: 'Notifications' },
