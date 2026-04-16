@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { useDepartments } from '../context/DepartmentContext';
 import { useEmployees } from '../context/EmployeeContext';
+import { usePositions } from '../context/PositionContext';
 import { useAuth } from '../context/AuthContext';
 import { Building2, Search, Plus, MoreHorizontal, Users, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getEmployeeFullName, getPositionTitleById } from '../utils/org';
 
 export const DepartmentList = () => {
   const { departments, deleteDepartment } = useDepartments();
   const { employees } = useEmployees();
+  const { positions } = usePositions();
   const { hasPermission } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
-  const getHeadName = (id) => {
-    if (!id) return 'No Manager Assigned';
-    const head = employees.find((e) => e.id === id);
-    return head ? `${head.firstName} ${head.lastName}` : 'System Admin';
+  const getHeadName = (department) => {
+    if (!department?.head) return 'No Manager Assigned';
+    return getEmployeeFullName(department.head);
   };
 
   const getEmployeeCount = (deptId) => {
@@ -41,7 +43,7 @@ export const DepartmentList = () => {
             <h1 className="h1">Departments</h1>
             <p className="text-muted text-sm">Organize and manage your company departments.</p>
           </div>
-          {hasPermission('admin_all') && (
+          {hasPermission('department_create') && (
             <button className="btn btn-primary" onClick={() => navigate('/admin/departments/new')}>
               <Plus size={16} /> Add Department
             </button>
@@ -206,7 +208,7 @@ export const DepartmentList = () => {
                 <div>
                   <p className="text-xs text-muted">Head</p>
                   <p className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>
-                    {getHeadName(dept.headEmployeeId)}
+                    {getHeadName(dept)}
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -309,7 +311,7 @@ export const DepartmentList = () => {
                     <p style={{ fontWeight: 500, fontSize: '0.875rem' }}>
                       {member.firstName} {member.lastName}
                     </p>
-                    <p className="text-xs text-muted">{member.designation}</p>
+                    <p className="text-xs text-muted">{getPositionTitleById(positions, member.positionId)}</p>
                   </div>
                 </div>
               ))}

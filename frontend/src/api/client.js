@@ -28,7 +28,7 @@ export const apiClient = async (url, options = {}) => {
   }
 
   if (!response.ok) {
-    throw new Error(data.message || "API Error");
+    throw new Error(data?.message || "API Error");
   }
 
   return data;

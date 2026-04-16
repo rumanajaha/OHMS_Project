@@ -32,11 +32,7 @@ export const DepartmentForm = () => {
     }
   }, [id, isEditing, departments, employees]);
 
-  const eligibleHeads = employees.filter(
-    (e) =>
-      e.designation.toLowerCase().includes('manager') ||
-      e.designation.toLowerCase().includes('director')
-  );
+  const eligibleHeads = employees;
 
   const toggleEmployeeSelection = (empId) => {
     setSelectedEmployees((prev) =>
@@ -172,58 +168,63 @@ export const DepartmentForm = () => {
             </p>
           </div>
 
-          <h3
-            className="h3"
-            style={{
-              marginBottom: '1rem',
-              marginTop: '2rem',
-              paddingBottom: '0.5rem',
-              borderBottom: '1px solid var(--border-color)',
-            }}
-          >
-            Employee Roster Assignment
-          </h3>
-          <p className="text-sm text-muted" style={{ marginBottom: '1rem' }}>
-            Select existing employees below to instantly migrate their bounds into this new department upon creation.
-          </p>
+          {/** 
+          <div id="employee-assignment">
 
-          <div
-            style={{
-              maxHeight: '300px',
-              overflowY: 'auto',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              padding: '1rem',
-              background: 'var(--bg-main)',
-            }}
-          >
-            {employees.map((emp) => (
-              <label
-                key={emp.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '0.75rem',
-                  borderBottom: '1px solid var(--border-color)',
-                  cursor: 'pointer',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedEmployees.includes(emp.id)}
-                  onChange={() => toggleEmployeeSelection(emp.id)}
-                  style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
-                />
-                <div>
-                  <div style={{ fontWeight: 500 }}>
-                    {emp.firstName} {emp.lastName}
+            <h3
+              className="h3"
+              style={{
+                marginBottom: '1rem',
+                marginTop: '2rem',
+                paddingBottom: '0.5rem',
+                borderBottom: '1px solid var(--border-color)',
+              }}
+            >
+              Employee Roster Assignment
+            </h3>
+            <p className="text-sm text-muted" style={{ marginBottom: '1rem' }}>
+              Select existing employees below to instantly migrate their bounds into this new department upon creation.
+            </p>
+
+            <div
+              style={{
+                maxHeight: '300px',
+                overflowY: 'auto',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1rem',
+                background: 'var(--bg-main)',
+              }}
+            >
+              {employees.map((emp) => (
+                <label
+                  key={emp.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    padding: '0.75rem',
+                    borderBottom: '1px solid var(--border-color)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedEmployees.includes(emp.id)}
+                    onChange={() => toggleEmployeeSelection(emp.id)}
+                    style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 500 }}>
+                      {emp.firstName} {emp.lastName}
+                    </div>
+                    <div className="text-xs text-muted">{emp.designation}</div>
                   </div>
-                  <div className="text-xs text-muted">{emp.designation}</div>
-                </div>
-              </label>
-            ))}
+                </label>
+              ))}
+            </div>
           </div>
+          */}
 
           <div
             style={{

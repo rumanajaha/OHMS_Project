@@ -8,6 +8,7 @@ import com.org.backend.entity.Department;
 import com.org.backend.entity.Employee;
 import com.org.backend.repository.DepartmentRepository;
 import com.org.backend.repository.EmployeeRepository;
+import com.org.backend.repository.PositionRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final EmployeeRepository employeeRepository;
     private final EmployeeService employeeService;
+    private final PositionRepository positionRepository;
 
     public List<DepartmentDto> getAllDepartments(){
 
@@ -105,6 +107,10 @@ public class DepartmentService {
 
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid department id"));
+
+        if (positionRepository.countByDepartment(department) > 0){
+            throw new IllegalArgumentException("Positions are mapped to this department !");
+        }
 
         // soft delete logic in future
         departmentRepository.delete(department);
