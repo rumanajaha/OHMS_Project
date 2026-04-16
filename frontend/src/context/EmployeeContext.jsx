@@ -1,101 +1,133 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createEmployeeApi,
+  deleteEmployeeApi,
+  getEmployeesApi,
+  updateEmployeeApi,
+  updateEmployeeStatusApi,
+} from '../api/employee';
+import { useAuth } from './AuthContext';
+import { usePositions } from './PositionContext';
 
 const EmployeeContext = createContext(undefined);
 
-const initialEmployees = [
-  {
-    id: 'u1',
-    firstName: 'System',
-    lastName: 'Admin',
-    email: 'admin@demo.com',
-    phone: '555-0100',
-    hireDate: '2023-01-01',
-    departmentId: 'd1',
-    designation: 'Administrator',
-    status: 'Active',
-    skills: ['System Design'],
-  },
-  {
-    id: 'u2',
-    firstName: 'Jane',
-    lastName: 'Manager',
-    email: 'manager@demo.com',
-    phone: '555-0200',
-    hireDate: '2023-06-15',
-    departmentId: 'd1',
-    designation: 'Engineering Manager',
-    status: 'Active',
-    skills: ['Leadership', 'Agile'],
-  },
-  {
-    id: 'u3',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'employee@demo.com',
-    phone: '555-0300',
-    hireDate: '2024-02-10',
-    departmentId: 'd2',
-    managerId: 'u2',
-    designation: 'Frontend Engineer',
-    status: 'Active',
-    skills: ['React', 'TypeScript'],
-  },
-];
-
 export const EmployeeProvider = ({ children }) => {
-  const [employees, setEmployees] = useState(initialEmployees);
+  const { isAuthenticated } = useAuth();
+  const {positions} = usePositions();
+  const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('mock_employees');
-    if (saved) {
-      try {
-        setEmployees(JSON.parse(saved));
-      } catch (e) {
-        localStorage.removeItem('mock_employees');
-      }
-    }
-  }, []);
+  // console.log(positions);
+  
 
-  useEffect(() => {
-    localStorage.setItem('mock_employees', JSON.stringify(employees));
-  }, [employees]);
-
-  const addEmployee = async (emp) => {
+  const fetchEmployees = async () => {
+    console.log("fetchemps");
+    
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 500));
-    setEmployees((prev) => [
-      ...prev,
-      { ...emp, id: Math.random().toString(36).substr(2, 9) },
-    ]);
-    setIsLoading(false);
+    try {
+      const data = await getEmployeesApi();
+      setEmployees(Array.isArray(data) ? data : []);
+      return data;
+    } catch (err) {
+      console.error('Failed to fetch employees', err);
+      setEmployees([]);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateEmployee = async (id, updates) => {
+  useEffect(()=>{
+
+    console.log(positions);
+    console.log("posite");
+    
+    
+    employees.map((emp) => {
+      let position = positions.filter((pos) => emp.positionId == pos.id)?.[0]
+      console.log(emp, position);
+      
+      emp["position"] = position;
+      return emp
+    })
+  },[employees]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchEmployees().catch(() => {});
+    } else {
+      setEmployees([]);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem('employees', JSON.stringify(employees));
+  }, [employees]);
+  
+
+  const addEmployee = async (employeeData) => {
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 500));
-    setEmployees((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, ...updates } : e))
-    );
-    setIsLoading(false);
+    try {
+      const createdEmployee = await createEmployeeApi(employeeData);
+      setEmployees((prev) => [...prev, createdEmployee]);
+      return createdEmployee;
+    }catch(err){
+      window.alert(err.message || 'Failed to create employee');
+
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateEmployee = async (id, employeeData) => {
+    setIsLoading(true);
+    try {
+      const updatedEmployee = await updateEmployeeApi(id, employeeData);
+      setEmployees((prev) => prev.map((employee) => (employee.id == id ? updatedEmployee : employee)));
+      return updatedEmployee;
+    }catch(err){
+      window.alert(err.message || 'Failed to update employee');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateEmployeeStatus = async (id, status) => {
+    setIsLoading(true);
+    try {
+      const updatedEmployee = await updateEmployeeStatusApi(id, status);
+      setEmployees((prev) => prev.map((employee) => (employee.id == id ? updatedEmployee : employee)));
+      return updatedEmployee;
+    }catch(err){
+      window.alert(err.message || 'Failed to update employee');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const deleteEmployee = async (id) => {
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 500));
-    setEmployees((prev) => prev.filter((e) => e.id !== id));
-    setIsLoading(false);
+    try {
+      await deleteEmployeeApi(id);
+      setEmployees((prev) => prev.filter((employee) => employee.id != id));
+    }catch(err){
+      window.alert(err.message || 'Failed to delete employee');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getEmployeeById = (id) => employees.find((e) => e.id === id);
+  const getEmployeeById = (id) => employees.find((employee) => employee.id == id);
 
   return (
     <EmployeeContext.Provider
       value={{
         employees,
         isLoading,
+        fetchEmployees,
         addEmployee,
         updateEmployee,
+        updateEmployeeStatus,
         deleteEmployee,
         getEmployeeById,
       }}

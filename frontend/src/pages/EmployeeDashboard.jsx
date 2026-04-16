@@ -1,28 +1,29 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useEmployees } from '../context/EmployeeContext';
+import { usePositions } from '../context/PositionContext';
 import { useTasks } from '../context/TaskContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Users, CheckSquare, Bell, Search, Activity, UserX, UserCheck, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getEmployeeFullName, getPositionTitleById } from '../utils/org';
 
 export const EmployeeDashboard = () => {
   const { user } = useAuth();
   const { employees, getEmployeeById } = useEmployees();
+  const { positions } = usePositions();
   const { tasks } = useTasks();
   const { notifications } = useNotifications();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const currentUserData = employees.find((e) => e.id === user?.id);
+  const currentUserData = employees.find((e) => e.id === user?.employeeId);
   const managerData = currentUserData?.managerId ? getEmployeeById(currentUserData.managerId) : null;
-  const managerName = managerData
-    ? `${managerData.firstName} ${managerData.lastName}`
-    : 'System Assigned';
+  const managerName = managerData ? getEmployeeFullName(managerData) : 'System Assigned';
 
   const myTeam = employees.filter(
-    (e) => e.departmentId === currentUserData?.departmentId && e.id !== user?.id
+    (e) => e.managerId === currentUserData?.managerId && e.id !== user?.employeeId
   );
 
   const myTasks = tasks.filter(
@@ -187,9 +188,9 @@ export const EmployeeDashboard = () => {
                     </div>
                     <div>
                       <p style={{ fontWeight: 500, fontSize: '0.875rem' }}>
-                        {member.firstName} {member.lastName}
+                        {getEmployeeFullName(member)}
                       </p>
-                      <p className="text-xs text-muted">{member.designation}</p>
+                      <p className="text-xs text-muted">{getPositionTitleById(positions, member.positionId)}</p>
                     </div>
                   </div>
                   <ChevronRight size={16} className="text-muted" style={{ opacity: 0.2 }} />

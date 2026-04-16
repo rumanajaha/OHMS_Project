@@ -1,18 +1,27 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Briefcase, Calendar, Mail, Phone, User } from 'lucide-react';
 import { useEmployees } from '../context/EmployeeContext';
 import { useDepartments } from '../context/DepartmentContext';
+import { usePositions } from '../context/PositionContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, User, Mail, Phone, Briefcase, Calendar } from 'lucide-react';
+import {
+  getDepartmentNameById,
+  getEmployeeFullName,
+  getEmployeeStatusBadge,
+  getEmployeeStatusLabel,
+  getPositionTitleById,
+} from '../utils/org';
 
 export const EmployeeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { employees } = useEmployees();
   const { departments } = useDepartments();
+  const { positions } = usePositions();
   const { user } = useAuth();
 
-  const employee = employees.find((e) => e.id === id);
+  const employee = employees.find((entry) => entry.id == id);
 
   if (!employee) {
     return (
@@ -23,8 +32,7 @@ export const EmployeeDetail = () => {
     );
   }
 
-  const department = departments.find((d) => d.id === employee.departmentId);
-  const manager = employees.find((e) => e.id === employee.managerId);
+  const manager = employees.find((entry) => entry.id == employee.managerId);
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
@@ -32,53 +40,25 @@ export const EmployeeDetail = () => {
         <ArrowLeft size={16} /> Back to Directory
       </button>
 
-      <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-        <div style={{ background: 'var(--primary)', height: '120px' }}></div>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--primary)', height: '120px' }} />
         <div style={{ padding: '0 2rem 2rem 2rem', position: 'relative' }}>
-          <div
-            style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '50%',
-              background: 'var(--bg-surface)',
-              color: 'var(--primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '2.5rem',
-              fontWeight: 600,
-              border: '4px solid var(--bg-surface)',
-              marginTop: '-50px',
-              marginBottom: '1rem',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
+          <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'var(--bg-surface)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 600, border: '4px solid var(--bg-surface)', marginTop: '-50px', marginBottom: '1rem', boxShadow: 'var(--shadow-sm)' }}>
             {employee.firstName.charAt(0)}
             {employee.lastName.charAt(0)}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <h1 className="h1" style={{ marginBottom: '0.25rem' }}>
-                {employee.firstName} {employee.lastName}
-              </h1>
-              <p className="text-lg text-muted">{employee.designation}</p>
+              <h1 className="h1" style={{ marginBottom: '0.25rem' }}>{getEmployeeFullName(employee)}</h1>
+              <p className="text-lg text-muted">{getPositionTitleById(positions, employee.positionId)}</p>
             </div>
-            <span className={`badge badge-${employee.status === 'Active' ? 'success' : 'neutral'}`}>
-              {employee.status}
+            <span className={`badge badge-${getEmployeeStatusBadge(employee.status)}`}>
+              {getEmployeeStatusLabel(employee.status)}
             </span>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '2rem',
-              marginTop: '2.5rem',
-              paddingTop: '2.5rem',
-              borderTop: '1px solid var(--border-color)',
-            }}
-          >
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2.5rem', paddingTop: '2.5rem', borderTop: '1px solid var(--border-color)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                 <Mail className="text-muted" size={20} />
@@ -97,8 +77,8 @@ export const EmployeeDetail = () => {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                 <User className="text-muted" size={20} />
                 <div>
-                  <p className="text-xs text-muted mb-1 text-uppercase tracking-wide">Employee ID</p>
-                  <p className="font-medium" style={{ fontFamily: 'monospace' }}>{employee.id}</p>
+                  <p className="text-xs text-muted mb-1 text-uppercase tracking-wide">Employee Code</p>
+                  <p className="font-medium" style={{ fontFamily: 'monospace' }}>{employee.employeeCode}</p>
                 </div>
               </div>
             </div>
@@ -108,42 +88,29 @@ export const EmployeeDetail = () => {
                 <Briefcase className="text-muted" size={20} />
                 <div>
                   <p className="text-xs text-muted mb-1 text-uppercase tracking-wide">Department</p>
-                  <p className="font-medium">{department?.name || 'Unassigned'}</p>
+                  <p className="font-medium">{getDepartmentNameById(departments, employee.departmentId)}</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                 <User className="text-muted" size={20} />
                 <div>
                   <p className="text-xs text-muted mb-1 text-uppercase tracking-wide">Manager</p>
-                  <p className="font-medium">
-                    {manager ? `${manager.firstName} ${manager.lastName}` : 'N/A'}
-                  </p>
+                  <p className="font-medium">{manager ? getEmployeeFullName(manager) : 'N/A'}</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                 <Calendar className="text-muted" size={20} />
                 <div>
-                  <p className="text-xs text-muted mb-1 text-uppercase tracking-wide">Employment Status</p>
-                  <p className="font-medium">Full-Time Worker</p>
+                  <p className="text-xs text-muted mb-1 text-uppercase tracking-wide">Hire Date</p>
+                  <p className="font-medium">{employee.hireDate || 'Unknown'}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div
-            style={{
-              borderTop: '1px solid var(--border-color)',
-              paddingTop: '2rem',
-              marginTop: '2rem',
-              display: 'flex',
-              gap: '1rem',
-            }}
-          >
-            {user?.role !== 'EMPLOYEE' && (
-              <button
-                className="btn btn-primary"
-                onClick={() => navigate(`/admin/employees/edit/${employee.id}`)}
-              >
+          <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2rem', marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+            {user?.role === 'ADMIN' && (
+              <button className="btn btn-primary" onClick={() => navigate(`/admin/employees/edit/${employee.id}`)}>
                 Edit Record
               </button>
             )}

@@ -3,6 +3,7 @@ package com.org.backend.service;
 import com.org.backend.dto.CurrentUserDto;
 import com.org.backend.dto.LoginRequestDto;
 import com.org.backend.dto.LoginResponseDto;
+import com.org.backend.entity.Employee;
 import com.org.backend.entity.User;
 import com.org.backend.enums.UserStatus;
 import com.org.backend.exception.ApiException;
@@ -55,6 +56,11 @@ public class UserService {
                 );
 
         return mapUserToCurrentUserDto(user);
+    }
+
+    void deleteUserByEmpployee(Long employeeId){
+        userRepository.deleteByEmployeeId(employeeId);
+        userRepository.flush();
     }
 
     private CurrentUserDto mapUserToCurrentUserDto(User user){

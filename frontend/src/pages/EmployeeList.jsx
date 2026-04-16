@@ -4,6 +4,7 @@ import { useDepartments } from '../context/DepartmentContext';
 import { useAuth } from '../context/AuthContext';
 import { Search, Filter, Edit2, Trash2, Eye, Plus, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { usePositions } from '../context/PositionContext';
 
 export const EmployeeList = () => {
   const { employees, isLoading, deleteEmployee } = useEmployees();
@@ -117,9 +118,9 @@ export const EmployeeList = () => {
             style={{ padding: '0.4rem 0.75rem', width: 'auto' }}
           >
             <option value="All">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="On Leave">On Leave</option>
-            <option value="Terminated">Terminated</option>
+            <option value="ACTIVE">Active</option>
+            <option value="ON_LEAVE">On Leave</option>
+            <option value="TERMINATED">Terminated</option>
           </select>
         </div>
 
@@ -130,7 +131,7 @@ export const EmployeeList = () => {
               <tr>
                 <th>ID</th>
                 <th>Employee Info</th>
-                <th>Department</th>
+                <th>Department & Position </th>
                 <th>Manager</th>
                 <th>Status</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
@@ -175,9 +176,10 @@ export const EmployeeList = () => {
                             fontWeight: 600,
                           }}
                         >
-                          {emp.firstName.charAt(0)}{emp.lastName.charAt(0)}
+                          {emp.firstName?.charAt(0)}{emp.lastName?.charAt(0)}
                         </div>
                         <div>
+                          <div style={{ fontSize: '0.7rem' }}>{emp.employeeCode}</div>
                           <div style={{ fontWeight: 500, color: 'var(--text-main)' }}>
                             {emp.firstName} {emp.lastName}
                           </div>
@@ -187,14 +189,14 @@ export const EmployeeList = () => {
                     </td>
                     <td>
                       <div style={{ fontSize: '0.875rem' }}>{getDepartmentName(emp.departmentId)}</div>
-                      <div className="text-xs text-muted">{emp.designation}</div>
+                      <div className="text-xs text-muted">{`${emp.position?.title}(${emp.position?.positionCode})` || "No position assigned"}</div>
                     </td>
                     <td className="text-sm">{getManagerName(emp.managerId)}</td>
                     <td>
                       <span
-                        className={`badge badge-${emp.status === 'Active' ? 'success' : emp.status === 'On Leave' ? 'warning' : 'danger'}`}
+                        className={`badge badge-${emp.status === 'ACTIVE' ? 'success' : emp.status === 'On Leave' ? 'warning' : 'danger'}`}
                       >
-                        {emp.status}
+                        {emp.status || 'N/A'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>

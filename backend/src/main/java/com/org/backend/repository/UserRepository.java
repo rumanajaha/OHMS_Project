@@ -1,7 +1,9 @@
 package com.org.backend.repository;
 
+import com.org.backend.entity.Employee;
 import com.org.backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -11,4 +13,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
     Optional<User> findByUsername(String username);
+
+    Optional<User> findByEmployee(Employee employee);
+
+    @Modifying
+    void deleteByEmployeeId(Long employeeId);
 }

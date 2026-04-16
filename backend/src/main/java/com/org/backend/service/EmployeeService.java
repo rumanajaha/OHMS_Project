@@ -22,6 +22,8 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
+    private final UserService userService;
+
     @Transactional
     public EmployeeDto createEmployee(EmployeeCreateRequestDto request){
 
@@ -71,6 +73,12 @@ public class EmployeeService {
     @Transactional
     public void deleteEmployee(Long employeeId){
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Invalid employee id"));
+
+        if(employeeRepository.countByManagerId(employee.getId()) > 0){
+            throw new IllegalArgumentException("The employee is manger of other employees");
+        }
+
+//        userService.deleteUserByEmpployee(employeeId);
 
         employeeRepository.delete(employee);
     }
