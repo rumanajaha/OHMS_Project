@@ -13,7 +13,9 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useEmployees } from '../context/EmployeeContext';
 import { useDepartments } from '../context/DepartmentContext';
+import { usePositions } from '../context/PositionContext';
 import { User as UserIcon, Mail, Phone, Edit2, Link } from 'lucide-react';
+import { getEmployeeFullName, getPositionTitleById } from '../utils/org';
 
 
 const CustomNode = ({ data }) => {
@@ -95,6 +97,7 @@ const nodeTypes = { custom: CustomNode };
 export const OrgHierarchy = () => {
   const { employees } = useEmployees();
   const { departments } = useDepartments();
+  const { positions } = usePositions();
   const navigate = useNavigate();
   const [selectedNodeData, setSelectedNodeData] = React.useState(null);
 
@@ -136,9 +139,9 @@ export const OrgHierarchy = () => {
         position: { x: xPos, y: yPos },
         data: {
           id: employee.id,
-          name: `${employee.firstName} ${employee.lastName}`,
-          title: employee.designation,
-          initials: (employee.firstName[0] || '') + (employee.lastName[0] || ''),
+          name: getEmployeeFullName(employee),
+          title: getPositionTitleById(positions, employee.positionId),
+          initials: (employee?.firstName?.[0] || '') + (employee?.lastName?.[0] || ''),
           department: departments.find((d) => d.id === employee.departmentId)?.name,
           color:
             depth === 0
@@ -167,7 +170,7 @@ export const OrgHierarchy = () => {
     rootNodes.forEach((root) => traverse(root, 0, null));
 
     return { computedNodes: nodes, computedEdges: edges };
-  }, [employees, departments]);
+  }, [employees, departments, positions]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(computedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(computedEdges);

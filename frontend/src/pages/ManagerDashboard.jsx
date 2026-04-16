@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useEmployees } from '../context/EmployeeContext';
 import { useAuth } from '../context/AuthContext';
+import { usePositions } from '../context/PositionContext';
 import { useTasks } from '../context/TaskContext';
 import { useNotifications } from '../context/NotificationContext';
-import { Users, CheckSquare, Bell, ChevronRight, Search, Activity, UserX, UserCheck } from 'lucide-react';
+import { Users, CheckSquare, Bell, ChevronRight, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getEmployeeFullName, getPositionTitleById } from '../utils/org';
 
 export const ManagerDashboard = () => {
   const { employees } = useEmployees();
   const { user } = useAuth();
+  const { positions } = usePositions();
   const { tasks } = useTasks();
   const { notifications } = useNotifications();
   const navigate = useNavigate();
@@ -16,7 +19,7 @@ export const ManagerDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const myTeam = employees.filter(
-    (e) => e.managerId === user?.id || e.departmentId === user?.departmentId
+    (e) => e.managerId === user?.employeeId
   );
   const filteredTeam = myTeam.filter(
     (member) =>
@@ -26,10 +29,6 @@ export const ManagerDashboard = () => {
 
   const pendingTasks = tasks.filter((t) => t.status !== 'Completed');
   const unreadNotes = notifications.filter((n) => !n.isRead);
-
-  const regularCount = Math.floor(myTeam.length * 0.7);
-  const irregularCount = Math.floor(myTeam.length * 0.2);
-  const leaveCount = myTeam.length - regularCount - irregularCount;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -123,16 +122,15 @@ export const ManagerDashboard = () => {
               filteredTeam.slice(0, 5).map((member) => (
                 <div
                   key={member.id}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
-                  onClick={() => navigate(`/admin/employees/view/${member.id}`)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border-color)' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--bg-subtle)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '0.875rem' }}>
                       {member.firstName.charAt(0)}{member.lastName.charAt(0)}
                     </div>
                     <div>
-                      <p style={{ fontWeight: 500, fontSize: '0.875rem' }}>{member.firstName} {member.lastName}</p>
-                      <p className="text-xs text-muted">{member.designation}</p>
+                      <p style={{ fontWeight: 500, fontSize: '0.875rem' }}>{getEmployeeFullName(member)}</p>
+                      <p className="text-xs text-muted">{getPositionTitleById(positions, member.positionId)}</p>
                     </div>
                   </div>
                   <ChevronRight size={16} className="text-muted" />
