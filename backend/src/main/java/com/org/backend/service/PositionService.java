@@ -6,6 +6,7 @@ import com.org.backend.dto.PositionUpdateRequestDto;
 import com.org.backend.entity.Department;
 import com.org.backend.entity.Position;
 import com.org.backend.repository.DepartmentRepository;
+import com.org.backend.repository.EmployeeRepository;
 import com.org.backend.repository.PositionRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class PositionService {
 
     private final PositionRepository positionRepository;
     private final DepartmentRepository departmentRepository;
+    private final EmployeeRepository employeeRepository;
 
     public List<PositionDto> getAllPositions() {
 
@@ -32,6 +34,7 @@ public class PositionService {
 
         Position position = new Position();
         position.setTitle(request.title());
+        position.setPositionCode(request.code());
 
         Department department = departmentRepository
                 .findById(request.departmentId())
@@ -67,6 +70,7 @@ public class PositionService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid position id"));
 
         position.setTitle(request.title());
+        position.setPositionCode(request.code());
 
         Department department = departmentRepository
                 .findById(request.departmentId())
@@ -91,6 +95,10 @@ public class PositionService {
         Position position = positionRepository
                 .findById(positionId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid position id"));
+
+        if (employeeRepository.countByPositionId(position.getId()) > 0){
+            throw new IllegalArgumentException("Employees are mapped to this position !");
+        }
 
         positionRepository.delete(position);
     }
