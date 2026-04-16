@@ -1,4 +1,5 @@
 package com.org.backend.dto;
+import com.org.backend.enums.UserRoleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,9 @@ public record EmployeeCreateRequestDto(
         Long positionId,
         @NotNull(message = "Department ID is required")
         Long departmentId,
-        Long managerId
+        Long managerId,
+
+        @NotNull(message = "UserRole is required")
+        UserRoleType role
 ) {
 }

@@ -34,10 +34,28 @@ export const EmployeeForm = () => {
     positionId: '',
     managerId: '',
     status: 'ACTIVE',
+    role: 'EMPLOYEE'
   });
+
+  const availablePositions = useMemo(() => {
+    return positions.filter((pos) => {
+      const isUsed = employees.some((emp) => emp.positionId === pos.id);
+
+      if (isEditMode && existingEmployee?.positionId == pos.id) {
+        return true;
+      }
+
+      return !isUsed;
+    });
+  }, [positions, employees, existingEmployee, isEditMode]);
+
+
 
   useEffect(() => {
     if (existingEmployee) {
+      // availablePositions.push(
+      //   positions.filter((pos)=> pos.id == existingEmployee.positionId)
+      // );
       setFormData({
         employeeCode: existingEmployee.employeeCode || '',
         firstName: existingEmployee.firstName || '',
@@ -48,6 +66,8 @@ export const EmployeeForm = () => {
         positionId: existingEmployee.positionId ? String(existingEmployee.positionId) : '',
         managerId: existingEmployee.managerId ? String(existingEmployee.managerId) : '',
         status: existingEmployee.status || 'ACTIVE',
+        role: existingEmployee.role || 'EMPLOYEE',
+
       });
     }
   }, [existingEmployee]);
@@ -93,6 +113,7 @@ export const EmployeeForm = () => {
         positionId: Number(formData.positionId),
         departmentId: selectedPosition.departmentId,
         managerId: formData.managerId ? Number(formData.managerId) : null,
+        role: formData.role
     };
 
     let savedEmployee;
@@ -178,13 +199,15 @@ export const EmployeeForm = () => {
                 <input name="phone" value={formData.phone} onChange={handleChange} className="form-input" placeholder="555-0100" />
               </div>
 
-              <div style={{ gridColumn: '1 / -1', height: '1px', background: 'var(--border-color)', margin: '1rem 0' }} />
+              <div style={{ gridColumn: '1 / -1', height: '1px', background: 'var(--border-color)' }} />
+
+              
 
               <div className="form-group">
                 <label className="form-label">Position *</label>
                 <select required name="positionId" value={formData.positionId} onChange={handleChange} className="form-input">
                   <option value="">Select position</option>
-                  {positions.map((position) => (
+                  {availablePositions.map((position) => (
                     <option key={position.id} value={position.id}>
                       {position.title} ({getDepartmentNameById(departments, position.departmentId)})
                     </option>
@@ -195,6 +218,14 @@ export const EmployeeForm = () => {
                 <label className="form-label">Department</label>
                 <input value={derivedDepartment ? `${derivedDepartment.name} (${derivedDepartment.code})` : 'Select a position first'} className="form-input" readOnly />
               </div>
+
+              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-start' }}>
+                <button type="button" className="btn btn-ghost" onClick={() => navigate('/admin/positions/new')}>
+                  <PlusCircle size={16} /> Create New Position
+                </button>
+              </div>
+
+
               <div className="form-group">
                 <label className="form-label">Manager</label>
                 <select name="managerId" value={formData.managerId} onChange={handleChange} className="form-input">
@@ -215,11 +246,50 @@ export const EmployeeForm = () => {
                   <option value="TERMINATED">Terminated</option>
                 </select>
               </div>
-              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-start' }}>
-                <button type="button" className="btn btn-ghost" onClick={() => navigate('/admin/positions/new')}>
-                  <PlusCircle size={16} /> Create New Position
-                </button>
-              </div>
+
+              {!isEditMode && (
+                <>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <p>User Login details</p>
+                  </div>
+
+                  <div
+                    style={{
+                      gridColumn: '1 / -1',
+                      height: '1px',
+                      background: 'var(--border-color)',
+                      marginBottom: '1rem',
+                    }}
+                  />
+
+                  <div className="form-group">
+                    <label className="form-label">Username</label>
+                    <input value={formData.employeeCode} className="form-input" readOnly />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Password</label>
+                    <input value={formData.employeeCode} className="form-input" readOnly />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">UserRole</label>
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      className="form-input"
+                    >
+                      <option value="EMPLOYEE">Employee</option>
+                      <option value="MANAGER">Manager</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+
+              
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
@@ -236,7 +306,7 @@ export const EmployeeForm = () => {
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: 'var(--bg-subtle)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
               <div>
-                <p className="text-sm text-muted">Employee Code</p>
+                <p className="text-sm text-muted">Employee Code , Username, Password</p>
                 <p style={{ fontWeight: 500 }}>{formData.employeeCode}</p>
               </div>
               <div>
@@ -271,6 +341,11 @@ export const EmployeeForm = () => {
               <div>
                 <p className="text-sm text-muted">Hire Date</p>
                 <p style={{ fontWeight: 500 }}>{formData.hireDate}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-muted">Role </p>
+                <p style={{ fontWeight: 500 }}>{formData.role}</p>
               </div>
             </div>
 

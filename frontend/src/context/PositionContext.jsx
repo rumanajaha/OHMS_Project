@@ -6,6 +6,7 @@ import {
   updatePositionApi,
 } from '../api/position';
 import { useAuth } from './AuthContext';
+import { useEmployees } from './EmployeeContext';
 
 const PositionContext = createContext(undefined);
 
@@ -15,7 +16,6 @@ export const PositionProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchPositions = async () => {
-    console.log("fetchPositions");
 
     setIsLoading(true);
     try {

@@ -21,7 +21,6 @@ export const EmployeeProvider = ({ children }) => {
   
 
   const fetchEmployees = async () => {
-    console.log("fetchemps");
     
     setIsLoading(true);
     try {
@@ -39,13 +38,8 @@ export const EmployeeProvider = ({ children }) => {
 
   useEffect(()=>{
 
-    console.log(positions);
-    console.log("posite");
-    
-    
     employees.map((emp) => {
       let position = positions.filter((pos) => emp.positionId == pos.id)?.[0]
-      console.log(emp, position);
       
       emp["position"] = position;
       return emp

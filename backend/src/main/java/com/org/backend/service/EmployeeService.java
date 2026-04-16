@@ -1,5 +1,6 @@
 package com.org.backend.service;
 
+import com.org.backend.dto.CurrentUserDto;
 import com.org.backend.entity.Position;
 import com.org.backend.enums.EmployeeStatus;
 import com.org.backend.repository.EmployeeRepository;
@@ -36,6 +37,11 @@ public class EmployeeService {
         employee.setHireDate(request.hireDate());
 
         Position position = positionRepository.findById(request.positionId()).orElseThrow(() -> new IllegalArgumentException("Invalid position id"));
+
+        if (employeeRepository.existsByPositionId(position.getId())) {
+            throw new IllegalArgumentException("This position is already assigned to another employee");
+        }
+
         employee.setPosition(position);
         Department department = departmentRepository.findById(request.departmentId()).orElseThrow(() -> new IllegalArgumentException("Invalid department id"));
         employee.setDepartment(department);
@@ -43,7 +49,48 @@ public class EmployeeService {
             Employee manager = employeeRepository.findById(request.managerId()).orElseThrow(() -> new IllegalArgumentException("Invalid manager id"));
             employee.setManager(manager); }
         employee = employeeRepository.save(employee);
-        return mapToDto(employee); }
+
+        CurrentUserDto user = userService.createUser(
+                employee,
+                request.role()
+        );
+
+        return mapToDto(employee);
+    }
+
+    @Transactional
+    public EmployeeDto updateEmployee(Long employeeId, EmployeeUpdateRequestDto request){
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid employee id"));
+
+        employee.setEmployeeCode(request.employeeCode());
+        employee.setFirstName(request.firstName());
+        employee.setLastName(request.lastName());
+        employee.setEmail(request.email());
+        employee.setPhone(request.phone());
+        employee.setHireDate(request.hireDate());
+
+        Position position = positionRepository.findById(request.positionId()).orElseThrow(() -> new IllegalArgumentException("Invalid position id"));
+
+        if (!employee.getPosition().getId().equals(request.positionId()) &&
+                employeeRepository.existsByPositionIdAndIdNot(request.positionId(), employeeId)) {
+
+            throw new IllegalArgumentException("This position is already assigned to another employee");
+        }
+
+        employee.setPosition(position);
+
+        employee.setDepartment(position.getDepartment());
+
+        if(request.managerId() != null){
+            Employee manager = employeeRepository.findById(request.managerId()).orElseThrow(() -> new IllegalArgumentException("Invalid manager id"));
+            employee.setManager(manager); }
+        else {
+            employee.setManager(null); }
+        employee = employeeRepository.save(employee);
+        return mapToDto(employee);
+    }
 
     EmployeeDto mapToDto(Employee employee) {
         return new EmployeeDto(
@@ -58,7 +105,8 @@ public class EmployeeService {
                 employee.getPosition() != null ? employee.getPosition().getId() : null,
                 employee.getDepartment() != null ? employee.getDepartment().getId() : null,
                 employee.getManager() != null ? employee.getManager().getId() : null,
-                employee.getStatus()
+                employee.getStatus(),
+                employee.getUser().getUserRole().toString()
         );
     }
     public List<EmployeeDto> getAllEmployees(){
@@ -83,25 +131,6 @@ public class EmployeeService {
         employeeRepository.delete(employee);
     }
 
-    @Transactional
-    public EmployeeDto updateEmployee(Long employeeId, EmployeeUpdateRequestDto request){
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Invalid employee id"));
-        employee.setEmployeeCode(request.employeeCode());
-        employee.setFirstName(request.firstName());
-        employee.setLastName(request.lastName());
-        employee.setEmail(request.email());
-        employee.setPhone(request.phone());
-        employee.setHireDate(request.hireDate());
-        Position position = positionRepository.findById(request.positionId()).orElseThrow(() -> new IllegalArgumentException("Invalid position id"));
-        employee.setPosition(position);
-        employee.setDepartment(position.getDepartment());
-        if(request.managerId() != null){
-            Employee manager = employeeRepository.findById(request.managerId()).orElseThrow(() -> new IllegalArgumentException("Invalid manager id"));
-            employee.setManager(manager); }
-        else {
-            employee.setManager(null); }
-        employee = employeeRepository.save(employee);
-        return mapToDto(employee); }
     @Transactional
     public EmployeeDto changeEmployeeStatus(Long employeeId, EmployeeStatus status){
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Invalid employee id"));

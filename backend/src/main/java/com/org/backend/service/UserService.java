@@ -5,11 +5,13 @@ import com.org.backend.dto.LoginRequestDto;
 import com.org.backend.dto.LoginResponseDto;
 import com.org.backend.entity.Employee;
 import com.org.backend.entity.User;
+import com.org.backend.enums.UserRoleType;
 import com.org.backend.enums.UserStatus;
 import com.org.backend.exception.ApiException;
 import com.org.backend.exception.UnauthorizedException;
 import com.org.backend.repository.UserRepository;
 import com.org.backend.security.JwtService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,6 +47,24 @@ public class UserService {
                 token,
                 mapUserToCurrentUserDto(user)
         );
+    }
+
+    @Transactional
+    CurrentUserDto createUser(
+            Employee employee,
+            UserRoleType roleType
+            ){
+
+        User user = new User();
+        user.setUsername(employee.getEmployeeCode());
+        user.setPasswordHash(passwordEncoder.encode(employee.getEmployeeCode()));
+        user.setEmployee(employee);
+        user.setUserRole(roleType);
+
+        user = userRepository.save(user);
+        employee.setUser(user);
+
+        return mapUserToCurrentUserDto(user);
     }
 
     public CurrentUserDto me(Long userId){
