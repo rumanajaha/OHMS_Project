@@ -6,7 +6,7 @@ import { useTasks } from '../context/TaskContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Users, CheckSquare, Bell, ChevronRight, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getEmployeeFullName, getPositionTitleById } from '../utils/org';
+import { getDirectReports, getEmployeeFullName, getPositionTitleById } from '../utils/org';
 
 export const ManagerDashboard = () => {
   const { employees } = useEmployees();
@@ -18,9 +18,8 @@ export const ManagerDashboard = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const myTeam = employees.filter(
-    (e) => e.managerId === user?.employeeId
-  );
+  const managerEmployee = employees.find((employee) => employee.id === user?.employeeId);
+  const myTeam = getDirectReports(managerEmployee, employees, positions);
   const filteredTeam = myTeam.filter(
     (member) =>
       member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||

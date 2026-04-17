@@ -28,4 +28,21 @@ public class HierarchyController {
     ) {
         hierarchyService.movePosition(positionId, parentId);
     }
+    
+    @PreAuthorize("hasAuthority('HIERARCHY_EDIT')")
+    @PatchMapping("/position/{positionId}/assign/{employeeId}")
+    public void assignEmployee(
+            @PathVariable Long positionId,
+            @PathVariable Long employeeId
+    ) {
+        hierarchyService.assignEmployeeToPosition(positionId, employeeId);
+    }
+
+    @PreAuthorize("hasAuthority('HIERARCHY_EDIT')")
+    @PatchMapping("/position/{positionId}/unassign")
+    public void unassignEmployee(
+            @PathVariable Long positionId
+    ) {
+        hierarchyService.unassignEmployeeFromPosition(positionId);
+    }
 }
