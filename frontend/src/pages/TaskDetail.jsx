@@ -1,16 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTasks } from '../context/TaskContext';
+import { useAuth } from '../context/AuthContext';
+import { useEmployees } from '../context/EmployeeContext';
 import { ArrowLeft, Edit2, Save, Trash2, Calendar, User, AlignLeft, Flag, CheckCircle } from 'lucide-react';
 
 export const TaskDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getTaskById, updateTask, deleteTask } = useTasks();
+  const { getTaskById, updateTask, deleteTask, assignTask, isLoading } = useTasks();
+  const { user } = useAuth();
+  const { employees } = useEmployees();
+  
+  const canEdit = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
   const task = id ? getTaskById(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
+  const [selectedAssigneeIds, setSelectedAssigneeIds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    setEditedTask(task);
+    if (task && task.assignees) {
+      setSelectedAssigneeIds(task.assignees.map(a => Number(a.employeeId)));
+    }
+  }, [task]);
+
+  if (isLoading && !task) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <p className="text-muted">Loading...</p>
+      </div>
+    );
+  }
 
   if (!task || !editedTask) {
     return (
@@ -23,22 +46,40 @@ export const TaskDetail = () => {
 
   const handleSave = async () => {
     if (id && editedTask) {
-      await updateTask(id, editedTask);
-      setIsEditing(false);
+      try {
+        await updateTask(id, editedTask);
+        
+        const originalAssigneeIds = task?.assignees?.map(a => Number(a.employeeId)) || [];
+        const hasAssigneesChanged = 
+          selectedAssigneeIds.length !== originalAssigneeIds.length ||
+          !selectedAssigneeIds.every(ai => originalAssigneeIds.includes(ai));
+
+        if (hasAssigneesChanged) {
+          await assignTask(id, selectedAssigneeIds);
+        }
+        
+        setIsEditing(false);
+      } catch (err) {
+        window.alert('Failed to save task: Access denied or network error.');
+      }
     }
   };
 
   const handleDelete = async () => {
     if (id && window.confirm('Are you sure you want to delete this task?')) {
-      await deleteTask(id);
-      navigate(-1);
+      try {
+        await deleteTask(id);
+        navigate(-1);
+      } catch (err) {
+        window.alert('Action Blocked: You do not have permission to delete tasks.');
+      }
     }
   };
 
   const priorityColors = {
-    High: 'var(--danger)',
-    Medium: 'var(--warning)',
-    Low: 'var(--success)',
+    HIGH: 'var(--danger)',
+    MEDIUM: 'var(--warning)',
+    LOW: 'var(--success)',
   };
 
   return (
@@ -57,12 +98,15 @@ export const TaskDetail = () => {
             )}
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            {isEditing ? (
+            {isEditing && canEdit && (
               <button className="btn btn-primary" onClick={handleSave}><Save size={16} /> Save</button>
-            ) : (
+            )}
+            {!isEditing && canEdit && (
               <button className="btn btn-secondary" onClick={() => setIsEditing(true)}><Edit2 size={16} /> Edit</button>
             )}
-            <button className="btn btn-ghost text-danger" onClick={handleDelete}><Trash2 size={16} /></button>
+            {canEdit && (
+              <button className="btn btn-ghost text-danger" onClick={handleDelete}><Trash2 size={16} /></button>
+            )}
           </div>
         </div>
 
@@ -72,9 +116,41 @@ export const TaskDetail = () => {
             <div>
               <p className="text-xs text-muted">Assignee</p>
               {isEditing ? (
-                <input type="text" className="form-input" value={editedTask.assignee} onChange={(e) => setEditedTask({ ...editedTask, assignee: e.target.value })} style={{ padding: '0.25rem' }} />
+                <div style={{ position: 'relative', marginTop: '0.25rem' }}>
+                  <input 
+                    type="text" 
+                    className="form-input mb-2" 
+                    placeholder="Search employees..." 
+                    value={searchQuery} 
+                    onChange={(e) => setSearchQuery(e.target.value)} 
+                    style={{ padding: '0.25rem' }} 
+                    disabled={!employees || employees.length === 0}
+                  />
+                  {(!employees || employees.length === 0) ? (
+                    <div style={{ padding: '0.75rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center' }}>
+                      No employees available (or access denied)
+                    </div>
+                  ) : (
+                    <select 
+                       className="form-input" 
+                       multiple 
+                       value={selectedAssigneeIds} 
+                       onChange={(e) => {
+                         const values = Array.from(e.target.selectedOptions, option => Number(option.value));
+                         setSelectedAssigneeIds(values);
+                       }}
+                       style={{ padding: '0.25rem', height: '100px' }}>
+                      {employees
+                        .filter(emp => (emp.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()))
+                        .map(emp => (
+                        <option key={emp.id} value={emp.id}>{emp.fullName}</option>
+                      ))}
+                    </select>
+                  )}
+                  {employees && employees.length > 0 && <p className="text-xs text-muted mt-1">Hold Cmd/Ctrl to select multiple</p>}
+                </div>
               ) : (
-                <p style={{ fontWeight: 500 }}>{task.assignee}</p>
+                <p style={{ fontWeight: 500 }}>{task.assignees?.map(a => a.employeeName).join(', ') || 'Unassigned'}</p>
               )}
             </div>
           </div>
@@ -97,12 +173,12 @@ export const TaskDetail = () => {
               <p className="text-xs text-muted">Priority</p>
               {isEditing ? (
                 <select className="form-input" value={editedTask.priority} onChange={(e) => setEditedTask({ ...editedTask, priority: e.target.value })} style={{ padding: '0.25rem' }}>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
+                  <option value="HIGH">High</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="LOW">Low</option>
                 </select>
               ) : (
-                <span className="badge badge-neutral text-xs" style={{ background: 'var(--bg-subtle)', color: priorityColors[task.priority], fontWeight: 600 }}>{task.priority}</span>
+                <span className="badge badge-neutral text-xs" style={{ background: 'var(--bg-subtle)', color: priorityColors[task.priority?.toUpperCase()], fontWeight: 600 }}>{task.priority}</span>
               )}
             </div>
           </div>
@@ -113,9 +189,9 @@ export const TaskDetail = () => {
               <p className="text-xs text-muted">Status</p>
               {isEditing ? (
                 <select className="form-input" value={editedTask.status} onChange={(e) => setEditedTask({ ...editedTask, status: e.target.value })} style={{ padding: '0.25rem' }}>
-                  <option value="To Do">To Do</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
+                  <option value="TODO">To Do</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="DONE">Completed</option>
                 </select>
               ) : (
                 <span style={{ fontWeight: 500 }}>{task.status}</span>
@@ -138,19 +214,7 @@ export const TaskDetail = () => {
           )}
         </div>
 
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <h3 className="h3 text-sm">Progress</h3>
-            <span className="text-sm font-medium">{isEditing ? editedTask.progress : task.progress}%</span>
-          </div>
-          {isEditing ? (
-            <input type="range" min="0" max="100" value={editedTask.progress} onChange={(e) => setEditedTask({ ...editedTask, progress: parseInt(e.target.value) })} style={{ width: '100%' }} />
-          ) : (
-            <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-              <div style={{ width: `${task.progress}%`, height: '100%', background: 'var(--primary)', transition: 'width 0.3s ease' }} />
-            </div>
-          )}
-        </div>
+
       </div>
     </div>
   );

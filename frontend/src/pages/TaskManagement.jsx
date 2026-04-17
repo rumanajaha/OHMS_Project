@@ -18,27 +18,30 @@ export const TaskManagement = () => {
     await addTask({
       title: newTaskTitle,
       description: '',
-      assignee: user?.name || 'Unassigned',
-      dueDate: new Date().toLocaleDateString(),
-      priority: 'Medium',
-      status: 'To Do',
-      progress: 0,
+      priority: 'MEDIUM',
+      dueDate: new Date().toISOString().split('T')[0],
+      assignedByEmployeeId: user?.employeeId,
+      assigneeIds: [],
     });
     setNewTaskTitle('');
     setIsModalOpen(false);
   };
 
   const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'High': return 'var(--danger)';
-      case 'Medium': return 'var(--warning)';
-      case 'Low': return 'var(--success)';
+    switch (priority?.toUpperCase()) {
+      case 'HIGH': return 'var(--danger)';
+      case 'MEDIUM': return 'var(--warning)';
+      case 'LOW': return 'var(--success)';
       default: return 'var(--text-muted)';
     }
   };
 
-  const columns = ['To Do', 'In Progress', 'Completed'];
-  const basePath = user?.role === 'MANAGER' || user?.role === 'ADMIN' ? '/manager' : '/employee';
+  const columns = [
+    { label: 'To Do', value: 'TODO' },
+    { label: 'In Progress', value: 'IN_PROGRESS' },
+    { label: 'Completed', value: 'DONE' }
+  ];
+  const basePath = user?.role === 'ADMIN' ? '/admin' : user?.role === 'MANAGER' ? '/manager' : '/employee';
 
   return (
     <div className="animate-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -70,12 +73,12 @@ export const TaskManagement = () => {
 
       <div style={{ display: 'flex', gap: '1.5rem', flex: 1, overflowX: 'auto', paddingBottom: '1rem' }}>
         {columns.map((column) => {
-          const columnTasks = tasks.filter((t) => t.status === column);
+          const columnTasks = tasks.filter((t) => t.status === column.value);
           return (
-            <div key={column} style={{ flex: '0 0 320px', display: 'flex', flexDirection: 'column', background: 'var(--bg-main)', borderRadius: 'var(--radius-lg)', padding: '1rem' }}>
+            <div key={column.value} style={{ flex: '0 0 320px', display: 'flex', flexDirection: 'column', background: 'var(--bg-main)', borderRadius: 'var(--radius-lg)', padding: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', padding: '0 0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <h3 className="h3" style={{ margin: 0 }}>{column}</h3>
+                  <h3 className="h3" style={{ margin: 0 }}>{column.label}</h3>
                   <span style={{ background: 'var(--bg-surface)', padding: '0.125rem 0.5rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
                     {columnTasks.length}
                   </span>
