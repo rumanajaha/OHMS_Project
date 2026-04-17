@@ -32,7 +32,7 @@ public class Task {
     private TaskPriority priority = TaskPriority.MEDIUM;
     private LocalDate dueDate;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="Assigned By ",nullable=false)
+    @JoinColumn(name="assigned_by_id", nullable=false)
     private Employee assignedBy;
     @OneToMany(mappedBy="task",cascade=CascadeType.ALL,fetch =FetchType.LAZY)
     private List<TaskAssignment> assignments = new ArrayList<>();
