@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useEmployees } from '../context/EmployeeContext';
 import { usePositions } from '../context/PositionContext';
-import { getDirectReports, getEmployeeFullName, getEmployeeStatusBadge, getEmployeeStatusLabel, getPositionTitleById } from '../utils/org';
+import { getEmployeeFullName, getEmployeeStatusBadge, getEmployeeStatusLabel, getPositionTitleById } from '../utils/org';
 
 export const MyTeam = () => {
   const { user } = useAuth();
@@ -10,7 +10,7 @@ export const MyTeam = () => {
   const { positions } = usePositions();
 
   const managerData = employees.find((e) => e.id === user?.employeeId);
-  const myTeam = getDirectReports(managerData, employees, positions);
+  const myTeam = employees.filter((e) => e.managerId === user?.employeeId);
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

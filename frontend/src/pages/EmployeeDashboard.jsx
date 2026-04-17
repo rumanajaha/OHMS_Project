@@ -6,11 +6,11 @@ import { useTasks } from '../context/TaskContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Users, CheckSquare, Bell, Search, Activity, UserX, UserCheck, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getEffectiveManager, getEmployeeFullName, getPeersForEmployee, getPositionTitleById } from '../utils/org';
+import { getEmployeeFullName, getPositionTitleById } from '../utils/org';
 
 export const EmployeeDashboard = () => {
   const { user } = useAuth();
-  const { employees } = useEmployees();
+  const { employees, getEmployeeById } = useEmployees();
   const { positions } = usePositions();
   const { tasks } = useTasks();
   const { notifications } = useNotifications();
@@ -19,10 +19,12 @@ export const EmployeeDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const currentUserData = employees.find((e) => e.id === user?.employeeId);
-  const managerData = getEffectiveManager(currentUserData, employees, positions);
+  const managerData = currentUserData?.managerId ? getEmployeeById(currentUserData.managerId) : null;
   const managerName = managerData ? getEmployeeFullName(managerData) : 'System Assigned';
 
-  const myTeam = getPeersForEmployee(currentUserData, employees, positions);
+  const myTeam = employees.filter(
+    (e) => e.managerId === currentUserData?.managerId && e.id !== user?.employeeId
+  );
 
   const myTasks = tasks.filter(
     (t) => t.assignee.includes(user?.name?.split(' ')[0] || '') || t.assignee === 'You'

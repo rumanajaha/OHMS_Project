@@ -19,7 +19,6 @@ public class HierarchyService {
 
     private final EmployeeRepository employeeRepository;
     private final PositionRepository positionRepository;
-    private final NotificationService notificationService;
 
     public List<HierarchyNodeDto> getFullHierarchy(){
 
@@ -101,70 +100,5 @@ public class HierarchyService {
         }
         position.setParentPosition(parent);
         positionRepository.save(position);
-
-        List<Employee> employees = employeeRepository.findAll().stream()
-                .filter(e -> e.getPosition() != null && e.getPosition().getId().equals(positionId))
-                .toList();
-        
-        for (Employee emp : employees) {
-            if (emp.getUser() != null) {
-                notificationService.notify(
-                        emp.getUser().getId(),
-                        "Hierarchy Changed",
-                        "Your position's place in the hierarchy has changed.",
-                        com.org.backend.enums.NotificationType.POSITION_CHANGED,
-                        positionId,
-                        1L
-                );
-            }
-        }
-    }
-
-    public void assignEmployeeToPosition(Long positionId, Long employeeId) {
-        Position position = positionRepository.findById(positionId).orElseThrow(() -> new RuntimeException("Position not found"));
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new RuntimeException("Employee not found"));
-        
-        if (employeeRepository.existsByPositionIdAndIdNot(positionId, employeeId)) {
-            throw new RuntimeException("This position is already assigned to another employee");
-        }
-        
-        employee.setPosition(position);
-        employee.setDepartment(position.getDepartment());
-        employeeRepository.save(employee);
-        
-        if (employee.getUser() != null) {
-            notificationService.notify(
-                    employee.getUser().getId(),
-                    "Position Assigned",
-                    "You have been assigned to the position: " + position.getTitle(),
-                    com.org.backend.enums.NotificationType.EMPLOYEE_ASSIGNED,
-                    employee.getId(),
-                    1L
-            );
-        }
-    }
-
-    public void unassignEmployeeFromPosition(Long positionId) {
-        Position position = positionRepository.findById(positionId).orElseThrow(() -> new RuntimeException("Position not found"));
-        List<Employee> employees = employeeRepository.findAll().stream()
-                .filter(e -> e.getPosition() != null && e.getPosition().getId().equals(positionId))
-                .toList();
-
-        for (Employee employee : employees) {
-            employee.setPosition(null);
-            employee.setDepartment(null);
-            employeeRepository.save(employee);
-            
-            if (employee.getUser() != null) {
-                notificationService.notify(
-                        employee.getUser().getId(),
-                        "Position Unassigned",
-                        "You have been unassigned from the position: " + position.getTitle(),
-                        com.org.backend.enums.NotificationType.POSITION_CHANGED,
-                        employee.getId(),
-                        1L
-                );
-            }
-        }
     }
 }

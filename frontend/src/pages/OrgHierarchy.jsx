@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ReactFlow,
@@ -14,57 +14,25 @@ import '@xyflow/react/dist/style.css';
 import { useEmployees } from '../context/EmployeeContext';
 import { useDepartments } from '../context/DepartmentContext';
 import { usePositions } from '../context/PositionContext';
-import { Briefcase, Mail, Phone, Edit2, UserCog, UserPlus, UserMinus, LogOut } from 'lucide-react';
-import { getDepartmentNameById, getEmployeeByPositionId, getEmployeeFullName, getRootPositions } from '../utils/org';
-import { assignEmployeeToPositionApi, movePositionApi, unassignEmployeeFromPositionApi } from '../api/hierarchy';
-import { updateEmployeeStatusApi } from '../api/employee';
+import { User as UserIcon, Mail, Phone, Edit2, Link } from 'lucide-react';
+import { getEmployeeFullName, getPositionTitleById } from '../utils/org';
+
 
 const CustomNode = ({ data }) => {
-  const [isDragOver, setIsDragOver] = React.useState(false);
-
-  const onDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setIsDragOver(true);
-  };
-
-  const onDragLeave = () => {
-    setIsDragOver(false);
-  };
-
-  const onDrop = (e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    const employeeId = e.dataTransfer.getData('employeeId');
-    const positionId = e.dataTransfer.getData('positionId');
-    if (employeeId && !data.employeeId) {
-      if (window.confirm('Are you sure you want to assign this employee to this position?')) {
-        data.onAssignEmployee(data.positionId, employeeId);
-      }
-    } else if (positionId && positionId !== String(data.positionId)) {
-      if (window.confirm('Are you sure you want to change the parent of this position?')) {
-        data.onChangeParent(positionId, data.positionId);
-      }
-    }
-  };
-
   return (
     <div
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
       style={{
-        background: isDragOver ? 'var(--bg-subtle)' : 'var(--bg-surface)',
+        background: 'var(--bg-surface)',
         padding: '1rem',
         borderRadius: 'var(--radius-lg)',
-        minWidth: '240px',
-        boxShadow: isDragOver ? '0 0 0 2px var(--primary)' : 'var(--shadow-md)',
+        minWidth: '220px',
+        boxShadow: 'var(--shadow-md)',
         border: '1px solid var(--border-color)',
         borderTop: `4px solid ${data.color || 'var(--primary)'}`,
         position: 'relative',
-        transition: 'all 0.2s ease',
       }}
     >
+      
       <Handle
         type="target"
         position={Position.Top}
@@ -90,11 +58,9 @@ const CustomNode = ({ data }) => {
         </div>
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-main)', fontFamily: 'Poppins, sans-serif' }}>
-            {data.positionTitle}
+            {data.name}
           </div>
-          <div style={{ fontSize: '0.75rem', color: data.employeeId ? 'var(--text-muted)' : 'var(--warning)', fontWeight: data.employeeId ? 'normal' : '600' }}>
-            {data.employeeName}
-          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{data.title}</div>
         </div>
       </div>
 
@@ -116,6 +82,7 @@ const CustomNode = ({ data }) => {
         </div>
       )}
 
+     
       <Handle
         type="source"
         position={Position.Bottom}
@@ -128,92 +95,34 @@ const CustomNode = ({ data }) => {
 const nodeTypes = { custom: CustomNode };
 
 export const OrgHierarchy = () => {
-  const { employees, fetchEmployees } = useEmployees();
+  const { employees } = useEmployees();
   const { departments } = useDepartments();
-  const { positions, fetchPositions } = usePositions();
+  const { positions } = usePositions();
   const navigate = useNavigate();
   const [selectedNodeData, setSelectedNodeData] = React.useState(null);
-  
-  const unassignedEmployees = useMemo(() => {
-    return employees.filter(emp => !emp.positionId && emp.status !== 'TERMINATED');
-  }, [employees]);
-
-  const handleAssignEmployee = useCallback(async (positionId, employeeId) => {
-    try {
-      await assignEmployeeToPositionApi(positionId, employeeId);
-      await fetchEmployees();
-      await fetchPositions();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to assign employee.');
-    }
-  }, [fetchEmployees, fetchPositions]);
-
-  const handleChangeParent = useCallback(async (positionId, parentId) => {
-    try {
-      await movePositionApi(positionId, parentId);
-      await fetchPositions();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to move position. Check for circular references.');
-    }
-  }, [fetchPositions]);
-
-  const onConnect = useCallback(
-    (params) => {
-      // params.source is parentId, params.target is childId
-      if (window.confirm('Are you sure you want to change the parent of this position?')) {
-        handleChangeParent(params.target, params.source);
-      }
-    },
-    [handleChangeParent]
-  );
-
-  const handleUnassignEmployee = useCallback(async (positionId) => {
-    if (!window.confirm('Are you sure you want to unassign this employee from their position?')) return;
-    try {
-      await unassignEmployeeFromPositionApi(positionId);
-      await fetchEmployees();
-      await fetchPositions();
-      setSelectedNodeData(null);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to unassign employee.');
-    }
-  }, [fetchEmployees, fetchPositions]);
-
-  const handleTerminateEmployee = useCallback(async (employeeId) => {
-    if (!window.confirm('Are you sure you want to mark this employee as Terminated?')) return;
-    try {
-      await updateEmployeeStatusApi(employeeId, 'TERMINATED');
-      await fetchEmployees();
-      setSelectedNodeData(null);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to mark employee as terminated.');
-    }
-  }, [fetchEmployees]);
 
   const { computedNodes, computedEdges } = useMemo(() => {
     const nodes = [];
     const edges = [];
-    const NODE_WIDTH = 280;
-    const SPACING_X = 80;
+
+    const NODE_WIDTH = 260;
+    const SPACING_X = 60;
     const SPACING_Y = 180;
+
+   
+    const rootNodes = employees.filter(
+      (e) => !e.managerId || !employees.some((emp) => emp.id === e.managerId)
+    );
+
     let globalX = 0;
 
-    const childrenByParent = positions.reduce((acc, position) => {
-      const key = position.parentPositionId ? String(position.parentPositionId) : 'root';
-      acc[key] = [...(acc[key] || []), position];
-      return acc;
-    }, {});
-
-    const traverse = (position, depth, parentPositionId = null) => {
-      const children = childrenByParent[String(position.id)] || [];
+    const traverse = (employee, depth, parentId) => {
+      const children = employees.filter((e) => e.managerId === employee.id);
       const startX = globalX;
 
-      children.forEach((child) => traverse(child, depth + 1, position.id));
+      children.forEach((child) => traverse(child, depth + 1, employee.id));
 
+      // Leaf node claims horizontal space
       if (children.length === 0) {
         globalX += NODE_WIDTH + SPACING_X;
       }
@@ -223,41 +132,33 @@ export const OrgHierarchy = () => {
           ? startX
           : (startX + globalX - NODE_WIDTH - SPACING_X) / 2;
       const yPos = depth * SPACING_Y + 50;
-      const employee = getEmployeeByPositionId(employees, position.id);
-      const employeeName = employee ? getEmployeeFullName(employee) : 'Vacant position';
 
       nodes.push({
-        id: String(position.id),
+        id: employee.id,
         type: 'custom',
         position: { x: xPos, y: yPos },
         data: {
-          id: String(position.id),
-          positionId: position.id,
-          employeeId: employee?.id || null,
-          positionTitle: position.title,
-          employeeName,
-          initials: employee
-            ? `${employee?.firstName?.[0] || ''}${employee?.lastName?.[0] || ''}`
-            : (position.title || 'VP').slice(0, 2).toUpperCase(),
-          department: getDepartmentNameById(departments, position.departmentId),
+          id: employee.id,
+          name: getEmployeeFullName(employee),
+          title: getPositionTitleById(positions, employee.positionId),
+          initials: (employee?.firstName?.[0] || '') + (employee?.lastName?.[0] || ''),
+          department: departments.find((d) => d.id === employee.departmentId)?.name,
           color:
             depth === 0
               ? 'var(--primary)'
               : depth === 1
-                ? 'var(--secondary)'
-                : 'var(--accent)',
-          rawPosition: position,
-          rawEmployee: employee || null,
-          onAssignEmployee: handleAssignEmployee,
-          onChangeParent: handleChangeParent,
+              ? 'var(--secondary)'
+              : 'var(--accent)',
+          raw: employee,
         },
       });
 
-      if (parentPositionId) {
+    
+      if (parentId) {
         edges.push({
-          id: `e-${parentPositionId}-${position.id}`,
-          source: String(parentPositionId),
-          target: String(position.id),
+          id: `e-${parentId}-${employee.id}`,
+          source: parentId,      
+          target: employee.id,   
           type: 'smoothstep',
           animated: false,
           style: { stroke: 'var(--primary)', strokeWidth: 2, opacity: 0.5 },
@@ -266,10 +167,10 @@ export const OrgHierarchy = () => {
       }
     };
 
-    getRootPositions(positions).forEach((root) => traverse(root, 0));
+    rootNodes.forEach((root) => traverse(root, 0, null));
 
     return { computedNodes: nodes, computedEdges: edges };
-  }, [departments, employees, positions]);
+  }, [employees, departments, positions]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(computedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(computedEdges);
@@ -278,10 +179,11 @@ export const OrgHierarchy = () => {
     setNodes(computedNodes);
     setEdges(computedEdges);
     if (selectedNodeData) {
-      const updated = computedNodes.find((node) => node.id === selectedNodeData.id);
-      setSelectedNodeData(updated ? updated.data : null);
+      const updated = computedNodes.find((n) => n.id === selectedNodeData.id);
+      if (updated) setSelectedNodeData(updated.data);
+      else setSelectedNodeData(null);
     }
-  }, [computedEdges, computedNodes, selectedNodeData, setEdges, setNodes]);
+  }, [computedNodes, computedEdges, setNodes, setEdges]);
 
   const onNodeClick = useCallback((_event, node) => {
     setSelectedNodeData(node.data);
@@ -292,90 +194,23 @@ export const OrgHierarchy = () => {
       <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="h1">Hierarchy Map</h1>
-          <p className="text-muted text-sm">Interactive visualization of your organization structure by parent position.</p>
+          <p className="text-muted text-sm">Interactive visualization of your organization structure.</p>
         </div>
       </div>
 
       <div
-        style={{ flex: 1, display: 'flex', gap: '1.5rem', minHeight: '600px', overflow: 'hidden' }}
+        className="card"
+        style={{ flex: 1, padding: 0, overflow: 'hidden', display: 'flex', position: 'relative', minHeight: '600px' }}
       >
-        <div className="card" style={{ width: '280px', display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
-          <h3 className="h3" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <UserPlus size={18} />
-            Unassigned
-          </h3>
-          <p className="text-sm text-muted" style={{ marginBottom: '1rem' }}>
-            Drag and drop employees to vacant positions in the hierarchy.
-          </p>
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {unassignedEmployees.length === 0 ? (
-              <div className="text-sm text-muted" style={{ textAlign: 'center', padding: '2rem 0' }}>
-                No unassigned employees.
-              </div>
-            ) : (
-              unassignedEmployees.map((emp) => (
-                <div
-                  key={emp.id}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('application/reactflow-type', 'unassigned-employee');
-                    e.dataTransfer.setData('employeeId', emp.id);
-                  }}
-                  style={{
-                    padding: '0.75rem',
-                    background: 'var(--bg-main)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    cursor: 'grab',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '8px',
-                      background: 'var(--primary-light)',
-                      color: 'var(--primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 600,
-                      fontSize: '0.75rem',
-                    }}
-                  >
-                    {emp.firstName?.[0]}{emp.lastName?.[0]}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{getEmployeeFullName(emp)}</div>
-                    <div className="text-xs text-muted">{emp.employeeCode}</div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div
-          className="card"
-          style={{ flex: 1, padding: 0, overflow: 'hidden', display: 'flex', position: 'relative' }}
-        >
-          <div style={{ flex: 1, height: '100%' }}>
-            {nodes.length > 0 ? (
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={onNodeClick}
-                onNodeDragStart={(e, node) => {
-                  e.dataTransfer?.setData('application/reactflow-type', 'position-node');
-                  e.dataTransfer?.setData('positionId', node.data.positionId);
-                }}
-                nodeTypes={nodeTypes}
+        <div style={{ flex: 1, height: '100%' }}>
+          {nodes.length > 0 ? (
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onNodeClick={onNodeClick}
+              nodeTypes={nodeTypes}
               fitView
               fitViewOptions={{ padding: 0.3 }}
               minZoom={0.2}
@@ -397,6 +232,7 @@ export const OrgHierarchy = () => {
           )}
         </div>
 
+      
         {selectedNodeData && (
           <div
             style={{
@@ -409,7 +245,7 @@ export const OrgHierarchy = () => {
             }}
           >
             <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 className="h3">Position Details</h3>
+              <h3 className="h3">Employee Details</h3>
               <button
                 onClick={() => setSelectedNodeData(null)}
                 style={{ background: 'none', border: 'none', fontSize: '1.25rem', color: 'var(--text-muted)', cursor: 'pointer' }}
@@ -436,8 +272,7 @@ export const OrgHierarchy = () => {
               >
                 {selectedNodeData.initials}
               </div>
-              <h2 className="h2" style={{ marginBottom: '0.25rem' }}>{selectedNodeData.positionTitle}</h2>
-              <p className="text-sm text-muted">{selectedNodeData.employeeName}</p>
+              <h2 className="h2" style={{ marginBottom: '0.25rem' }}>{selectedNodeData.name}</h2>
               <span className="badge badge-neutral" style={{ marginTop: '0.5rem' }}>
                 {selectedNodeData.department || 'Unknown Dept'}
               </span>
@@ -445,67 +280,46 @@ export const OrgHierarchy = () => {
 
             <div style={{ padding: '1.5rem', flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <Briefcase size={16} className="text-muted" />
+                <UserIcon size={16} className="text-muted" />
                 <div>
-                  <div className="text-xs text-muted">Position</div>
-                  <div className="text-sm font-medium">{selectedNodeData.positionTitle}</div>
+                  <div className="text-xs text-muted">Title</div>
+                  <div className="text-sm font-medium">{selectedNodeData.title}</div>
                 </div>
               </div>
-
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
                 <Mail size={16} className="text-muted" />
                 <div>
                   <div className="text-xs text-muted">Email</div>
-                  <div className="text-sm font-medium">{selectedNodeData.rawEmployee?.email || 'Vacant'}</div>
+                  <div className="text-sm font-medium">{selectedNodeData.raw?.email || 'N/A'}</div>
                 </div>
               </div>
-
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
                 <Phone size={16} className="text-muted" />
                 <div>
                   <div className="text-xs text-muted">Phone</div>
-                  <div className="text-sm font-medium">{selectedNodeData.rawEmployee?.phone || 'Vacant'}</div>
+                  <div className="text-sm font-medium">{selectedNodeData.raw?.phone || 'N/A'}</div>
                 </div>
               </div>
             </div>
 
             <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {selectedNodeData.employeeId ? (
-                <>
-                  <button
-                    className="btn btn-primary"
-                    style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
-                    onClick={() => navigate(`/admin/employees/edit/${selectedNodeData.employeeId}`)}
-                  >
-                    <Edit2 size={16} /> Edit Employee
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', background: 'var(--bg-subtle)', color: 'var(--text-main)' }}
-                    onClick={() => handleUnassignEmployee(selectedNodeData.positionId)}
-                  >
-                    <UserMinus size={16} /> Unassign Employee
-                  </button>
-                  <button
-                    className="btn btn-danger"
-                    style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', background: 'var(--danger-light)', color: 'var(--danger)' }}
-                    onClick={() => handleTerminateEmployee(selectedNodeData.employeeId)}
-                  >
-                    <LogOut size={16} /> Terminate Employee
-                  </button>
-                </>
-              ) : null}
+              <button
+                className="btn btn-primary"
+                style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+                onClick={() => navigate(`/admin/employees/edit/${selectedNodeData.id}`)}
+              >
+                <Edit2 size={16} /> Edit Employee
+              </button>
               <button
                 className="btn btn-secondary"
                 style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
-                onClick={() => navigate(`/admin/positions/edit/${selectedNodeData.positionId}`)}
+                onClick={() => navigate(`/admin/employees/edit/${selectedNodeData.id}?focus=manager`)}
               >
-                <UserCog size={16} /> Edit Position
+                <Link size={16} /> Reassign Manager
               </button>
             </div>
           </div>
         )}
-        </div>
       </div>
     </div>
   );

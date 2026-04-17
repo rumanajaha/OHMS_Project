@@ -1,15 +1,17 @@
-import React from 'react';
-import { Bell, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, ShieldAlert, CheckCircle, Clock, Eye, EyeOff, MessageSquare, Send } from 'lucide-react';
 import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getRoleBasePath } from '../utils/org';
 
 export const Notifications = () => {
-  const { notifications, markAllAsRead, markAsRead } = useNotifications();
+  const { notifications, markAllAsRead, markAsRead, markAsUnread, replyToNotification } = useNotifications();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const basePath = getRoleBasePath(user?.role);
+
+  const [activeReplyId, setActiveReplyId] = useState(null);
+  const [replyText, setReplyText] = useState('');
+  const basePath = user?.role === 'MANAGER' || user?.role === 'ADMIN' ? '/manager' : '/employee';
 
   const getIcon = (type) => {
     switch (type) {
@@ -23,6 +25,27 @@ export const Notifications = () => {
   const handleNotificationClick = async (id, isRead) => {
     if (!isRead) await markAsRead(id);
     navigate(`${basePath}/notifications/${id}`);
+  };
+
+  const handleToggleRead = async (e, note) => {
+    e.stopPropagation();
+    if (note.isRead) await markAsUnread(note.id);
+    else await markAsRead(note.id);
+  };
+
+  const handleReplyToggle = (e, noteId) => {
+    e.stopPropagation();
+    setActiveReplyId(activeReplyId === noteId ? null : noteId);
+    setReplyText('');
+  };
+
+  const handleSendReply = async (e, noteId) => {
+    e.stopPropagation();
+    if (replyText.trim()) {
+      await replyToNotification(noteId, replyText.trim());
+      setActiveReplyId(null);
+      setReplyText('');
+    }
   };
 
   return (
@@ -41,55 +64,51 @@ export const Notifications = () => {
           <div
             key={note.id}
             className="card"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1rem',
-              cursor: 'pointer',
-              borderLeft: note.isRead ? 'none' : `3px solid var(--${note.uiType})`,
-            }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '1rem', cursor: 'pointer', borderLeft: note.isRead ? 'none' : `3px solid var(--${note.type})` }}
             onClick={() => handleNotificationClick(note.id, note.isRead)}
           >
             <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-              <div
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: 'var(--bg-subtle)',
-                  color: `var(--${note.uiType})`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                {getIcon(note.uiType)}
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-subtle)', color: `var(--${note.type})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {getIcon(note.type)}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                  <h4 style={{ fontWeight: note.isRead ? 500 : 700, fontSize: '0.9375rem', color: 'var(--text-main)', fontFamily: 'Poppins, sans-serif' }}>
-                    {note.title}
-                  </h4>
+                  <h4 style={{ fontWeight: note.isRead ? 500 : 700, fontSize: '0.9375rem', color: 'var(--text-main)', fontFamily: 'Poppins, sans-serif' }}>{note.title}</h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {!note.isRead && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)' }} />}
                     <span className="text-xs text-muted">{note.time}</span>
                   </div>
                 </div>
-                <p
-                  className="text-sm"
-                  style={{
-                    color: 'var(--text-muted)',
-                    lineHeight: 1.5,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
-                >
+                <p className="text-sm" style={{ color: 'var(--text-muted)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {note.message}
                 </p>
-                <p className="text-xs text-muted" style={{ marginTop: '1rem' }}>{note.typeLabel}</p>
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }} onClick={(e) => e.stopPropagation()}>
+                  <button className="btn btn-ghost text-xs" style={{ padding: '0.25rem 0.5rem', color: 'var(--text-muted)' }} onClick={(e) => handleToggleRead(e, note)}>
+                    {note.isRead ? <EyeOff size={14} style={{ marginRight: '0.375rem' }} /> : <Eye size={14} style={{ marginRight: '0.375rem' }} />}
+                    {note.isRead ? 'Mark as unread' : 'Mark as read'}
+                  </button>
+                  <button className="btn btn-ghost text-xs" style={{ padding: '0.25rem 0.5rem', color: 'var(--primary)' }} onClick={(e) => handleReplyToggle(e, note.id)}>
+                    <MessageSquare size={14} style={{ marginRight: '0.375rem' }} /> Reply
+                  </button>
+                </div>
+
+                {activeReplyId === note.id && (
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }} onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Type your reply..."
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      onKeyPress={(e) => { if (e.key === 'Enter') handleSendReply(e, note.id); }}
+                      autoFocus
+                    />
+                    <button className="btn btn-primary" onClick={(e) => handleSendReply(e, note.id)} disabled={!replyText.trim()}>
+                      <Send size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -2,8 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDocuments } from '../context/DocumentContext';
-import { FileText, Tags, Upload, Lock, Eye, EyeOff } from 'lucide-react';
-import { changePasswordApi } from '../api/user';
+import { FileText, Tags, Upload } from 'lucide-react';
 
 export const MyProfile = () => {
   const { user, updateUser } = useAuth();
@@ -14,14 +13,6 @@ export const MyProfile = () => {
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState('555-0199');
   const [isSaving, setIsSaving] = useState(false);
-
-  // Password change state
-  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState('');
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [showOld, setShowOld] = useState(false);
-  const [showNew, setShowNew] = useState(false);
 
   const fileInputRef = useRef(null);
   const myResumes = documents.filter((d) => d.name.toLowerCase().includes('resume'));
@@ -54,35 +45,6 @@ export const MyProfile = () => {
         type: file.type.split('/')[1] || 'Unknown',
       });
       if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handlePasswordChange = async (e) => {
-    e.preventDefault();
-    setPasswordError('');
-    setPasswordSuccess('');
-
-    if (passwordData.newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters.');
-      return;
-    }
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError('New password and confirmation do not match.');
-      return;
-    }
-
-    setIsChangingPassword(true);
-    try {
-      await changePasswordApi({
-        oldPassword: passwordData.oldPassword,
-        newPassword: passwordData.newPassword,
-      });
-      setPasswordSuccess('Password changed successfully!');
-      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err) {
-      setPasswordError(err.message || 'Failed to change password.');
-    } finally {
-      setIsChangingPassword(false);
     }
   };
 
@@ -127,88 +89,6 @@ export const MyProfile = () => {
         </div>
       </div>
 
-      {/* Change Password Card */}
-      <div className="card" style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-          <Lock size={20} className="text-primary" />
-          <h3 className="h3">Change Password</h3>
-        </div>
-
-        {passwordError && (
-          <div style={{ padding: '0.875rem 1rem', backgroundColor: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontSize: '0.875rem', marginBottom: '1rem', border: '1px solid #fecaca' }}>
-            {passwordError}
-          </div>
-        )}
-        {passwordSuccess && (
-          <div style={{ padding: '0.875rem 1rem', backgroundColor: '#f0fdf4', color: '#16a34a', borderRadius: '8px', fontSize: '0.875rem', marginBottom: '1rem', border: '1px solid #bbf7d0' }}>
-            {passwordSuccess}
-          </div>
-        )}
-
-        <form onSubmit={handlePasswordChange}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
-            <div className="form-group">
-              <label className="form-label">Current Password</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showOld ? 'text' : 'password'}
-                  className="form-input"
-                  placeholder="••••••••"
-                  value={passwordData.oldPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowOld(!showOld)}
-                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                >
-                  {showOld ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">New Password</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showNew ? 'text' : 'password'}
-                  className="form-input"
-                  placeholder="Min 6 characters"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNew(!showNew)}
-                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                >
-                  {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Confirm New Password</label>
-              <input
-                type="password"
-                className="form-input"
-                placeholder="Re-enter password"
-                value={passwordData.confirmPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                required
-                minLength={6}
-              />
-            </div>
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <button type="submit" className="btn btn-primary" disabled={isChangingPassword}>
-              {isChangingPassword ? 'Changing...' : 'Update Password'}
-            </button>
-          </div>
-        </form>
-      </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '2rem' }}>
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
@@ -237,7 +117,7 @@ export const MyProfile = () => {
             <p className="text-muted text-sm mb-2">Upload a new resume to your profile</p>
             <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleResumeUpload} />
             <button className="btn btn-secondary text-sm" onClick={() => fileInputRef.current?.click()}>
-              <Upload size={14} style={{ marginRight: '0.5rem' }} />Select File
+              <Upload size={14} style={{ marginRight: '0.5rem' }} /> Select File
             </button>
           </div>
           {myResumes.length > 0 ? (
