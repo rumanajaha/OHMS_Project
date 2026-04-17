@@ -6,6 +6,7 @@ import { useDepartments } from '../context/DepartmentContext';
 import { usePositions } from '../context/PositionContext';
 import { useAuth } from '../context/AuthContext';
 import {
+  getEffectiveManager,
   getDepartmentNameById,
   getEmployeeFullName,
   getEmployeeStatusBadge,
@@ -32,7 +33,7 @@ export const EmployeeDetail = () => {
     );
   }
 
-  const manager = employees.find((entry) => entry.id == employee.managerId);
+  const manager = getEffectiveManager(employee, employees, positions);
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>

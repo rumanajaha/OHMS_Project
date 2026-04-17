@@ -1,23 +1,68 @@
 import React from 'react';
 import {
   Bell, Search, User as UserIcon,
-  LogOut, ChevronDown
+  LogOut, ChevronDown, Check, Clock, User, Lock, Eye, EyeOff
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Breadcrumb } from './Breadcrumb';
+import { changePasswordApi } from '../api/user';
 
 export const TopNavbar = () => {
   const { user, logout } = useAuth();
+  const { notifications, unreadCount, markAsRead } = useNotifications();
   const navigate = useNavigate();
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false);
+  const [showNotifications, setShowNotifications] = React.useState(false);
+  const [showPasswordModal, setShowPasswordModal] = React.useState(false);
+  const [passwordData, setPasswordData] = React.useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = React.useState('');
+  const [passwordSuccess, setPasswordSuccess] = React.useState('');
+  const [isChangingPassword, setIsChangingPassword] = React.useState(false);
+  const [showOld, setShowOld] = React.useState(false);
+  const [showNew, setShowNew] = React.useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters.');
+      return;
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('Passwords do not match.');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await changePasswordApi({
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      });
+      setPasswordSuccess('Password changed successfully!');
+      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPasswordSuccess('');
+      }, 1500);
+    } catch (err) {
+      setPasswordError(err.message || 'Failed to change password.');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   return (
+    <>
     <header className="layout-navbar">
       <div style={{
         display: 'flex',
@@ -64,34 +109,93 @@ export const TopNavbar = () => {
           />
         </div>
 
-        <button
-          style={{
-            background: 'var(--bg-main)',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            position: 'relative'
-          }}
-        >
-          <Bell size={18} color="var(--text-muted)" />
-          <span
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
             style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              background: 'var(--accent)',
-              width: 8,
-              height: 8,
+              background: 'var(--bg-main)',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
               borderRadius: '50%',
-              border: '2px solid var(--bg-surface)'
+              position: 'relative'
             }}
-          />
-        </button>
+          >
+            <Bell size={18} color="var(--text-muted)" />
+            {unreadCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  background: 'var(--accent)',
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  border: '2px solid var(--bg-surface)'
+                }}
+              />
+            )}
+          </button>
+          
+          {showNotifications && (
+            <div
+              className="dropdown-menu"
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '100%',
+                marginTop: '0.75rem',
+                width: '320px',
+                zIndex: 100,
+                maxHeight: '400px',
+                overflowY: 'auto'
+              }}
+            >
+              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600 }}>Notifications</h4>
+                <span className="badge badge-primary">{unreadCount} New</span>
+              </div>
+              <div style={{ padding: '0.5rem' }}>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                    No notifications.
+                  </div>
+                ) : (
+                  notifications.map((notification) => (
+                    <button
+                      key={notification.id}
+                      className="dropdown-item"
+                      onClick={() => {
+                        if (!notification.isRead) markAsRead(notification.id);
+                        navigate('/notifications');
+                        setShowNotifications(false);
+                      }}
+                      style={{
+                        padding: '0.75rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem',
+                        alignItems: 'flex-start',
+                        background: notification.isRead ? 'transparent' : 'var(--bg-subtle)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.8125rem' }}>{notification.title}</span>
+                        {!notification.isRead && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--primary)' }} />}
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'left' }}>{notification.message}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div style={{ position: 'relative' }}>
           <button
@@ -172,6 +276,19 @@ export const TopNavbar = () => {
                   <UserIcon size={16} /> My Profile
                 </button>
 
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    setShowPasswordModal(true);
+                    setShowProfileDropdown(false);
+                    setPasswordError('');
+                    setPasswordSuccess('');
+                    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+                  }}
+                >
+                  <Lock size={16} /> Change Password
+                </button>
+
                 <div style={{
                   margin: '0.5rem -0.5rem',
                   borderTop: '1px solid var(--border-color)'
@@ -189,5 +306,121 @@ export const TopNavbar = () => {
         </div>
       </div>
     </header>
+
+    {/* Change Password Modal */}
+    {showPasswordModal && (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+        }}
+        onClick={(e) => { if (e.target === e.currentTarget) setShowPasswordModal(false); }}
+      >
+        <div
+          className="card animate-fade-in"
+          style={{
+            width: '440px',
+            maxWidth: '90vw',
+            padding: '2rem',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h3 className="h3" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Lock size={20} className="text-primary" /> Change Password
+            </h3>
+            <button
+              onClick={() => setShowPasswordModal(false)}
+              style={{ background: 'none', border: 'none', fontSize: '1.25rem', color: 'var(--text-muted)', cursor: 'pointer' }}
+            >
+              &times;
+            </button>
+          </div>
+
+          {passwordError && (
+            <div style={{ padding: '0.75rem 1rem', backgroundColor: '#fef2f2', color: '#dc2626', borderRadius: '8px', fontSize: '0.875rem', marginBottom: '1rem', border: '1px solid #fecaca' }}>
+              {passwordError}
+            </div>
+          )}
+          {passwordSuccess && (
+            <div style={{ padding: '0.75rem 1rem', backgroundColor: '#f0fdf4', color: '#16a34a', borderRadius: '8px', fontSize: '0.875rem', marginBottom: '1rem', border: '1px solid #bbf7d0' }}>
+              {passwordSuccess}
+            </div>
+          )}
+
+          <form onSubmit={handlePasswordSubmit}>
+            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+              <label className="form-label">Current Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showOld ? 'text' : 'password'}
+                  className="form-input"
+                  placeholder="Enter current password"
+                  value={passwordData.oldPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowOld(!showOld)}
+                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                >
+                  {showOld ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+              <label className="form-label">New Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  className="form-input"
+                  placeholder="Min 6 characters"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(!showNew)}
+                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                >
+                  {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">Confirm New Password</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Re-enter new password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                required
+                minLength={6}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button type="button" className="btn btn-secondary" onClick={() => setShowPasswordModal(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={isChangingPassword}>
+                {isChangingPassword ? 'Changing...' : 'Update Password'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   );
 };

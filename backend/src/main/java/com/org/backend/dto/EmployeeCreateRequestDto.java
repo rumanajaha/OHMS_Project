@@ -18,9 +18,7 @@ public record EmployeeCreateRequestDto(
         String phone,
         @NotNull(message = "Hire date ")
         LocalDate hireDate,
-        @NotNull(message = "Position ID is required")
         Long positionId,
-        @NotNull(message = "Department ID is required")
         Long departmentId,
         Long managerId,
 
