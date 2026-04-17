@@ -19,6 +19,7 @@ export const TaskDetail = () => {
   const [editedTask, setEditedTask] = useState(task);
   const [selectedAssigneeIds, setSelectedAssigneeIds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     setEditedTask(task);
@@ -117,37 +118,82 @@ export const TaskDetail = () => {
               <p className="text-xs text-muted">Assignee</p>
               {isEditing ? (
                 <div style={{ position: 'relative', marginTop: '0.25rem' }}>
-                  <input 
-                    type="text" 
-                    className="form-input mb-2" 
-                    placeholder="Search employees..." 
-                    value={searchQuery} 
-                    onChange={(e) => setSearchQuery(e.target.value)} 
-                    style={{ padding: '0.25rem' }} 
-                    disabled={!employees || employees.length === 0}
-                  />
-                  {(!employees || employees.length === 0) ? (
-                    <div style={{ padding: '0.75rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center' }}>
-                      No employees available (or access denied)
+                  <div 
+                    onClick={() => employees?.length > 0 && setIsDropdownOpen(!isDropdownOpen)}
+                    style={{ 
+                      padding: '0.625rem', 
+                      background: 'var(--bg-surface)', 
+                      border: '1px solid var(--border-color)', 
+                      borderRadius: 'var(--radius-md)', 
+                      cursor: employees?.length > 0 ? 'pointer' : 'not-allowed',
+                      minHeight: '42px',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '0.5rem',
+                      alignItems: 'center'
+                    }}
+                  >
+                    {selectedAssigneeIds.length === 0 ? (
+                      <span style={{ color: 'var(--text-muted)' }}>{employees?.length > 0 ? 'Select assignees...' : 'No employees available'}</span>
+                    ) : (
+                      selectedAssigneeIds.map(id => {
+                        const emp = employees?.find(e => e.id === id);
+                        return (
+                          <span key={id} style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '0.25rem 0.625rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600 }}>
+                            {emp?.fullName || 'Unknown'}
+                          </span>
+                        )
+                      })
+                    )}
+                  </div>
+
+                  {isDropdownOpen && employees?.length > 0 && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '0.5rem',
+                      background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)',
+                      boxShadow: 'var(--shadow-lg)', zIndex: 50, maxHeight: '240px', display: 'flex', flexDirection: 'column'
+                    }}>
+                      <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Search..." 
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', outline: 'none', background: 'var(--bg-main)' }}
+                          onClick={e => e.stopPropagation()}
+                        />
+                      </div>
+                      <div style={{ overflowY: 'auto', flex: 1, padding: '0.5rem' }}>
+                        {employees
+                          .filter(emp => (emp.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()))
+                          .map(emp => {
+                            const isSelected = selectedAssigneeIds.includes(emp.id);
+                            return (
+                              <div 
+                                key={emp.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (isSelected) {
+                                     setSelectedAssigneeIds(prev => prev.filter(p => p !== emp.id));
+                                  } else {
+                                     setSelectedAssigneeIds(prev => [...prev, emp.id]);
+                                  }
+                                }}
+                                style={{
+                                  padding: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                  background: isSelected ? 'var(--bg-subtle)' : 'transparent',
+                                  borderRadius: 'var(--radius-sm)'
+                                }}
+                              >
+                                 <input type="checkbox" checked={isSelected} readOnly style={{ accentColor: 'var(--primary)', width: '16px', height: '16px', cursor: 'pointer' }} />
+                                 <span style={{ fontWeight: isSelected ? 600 : 400, color: 'var(--text-main)', fontSize: '0.9375rem' }}>{emp.fullName}</span>
+                              </div>
+                            )
+                          })
+                        }
+                      </div>
                     </div>
-                  ) : (
-                    <select 
-                       className="form-input" 
-                       multiple 
-                       value={selectedAssigneeIds} 
-                       onChange={(e) => {
-                         const values = Array.from(e.target.selectedOptions, option => Number(option.value));
-                         setSelectedAssigneeIds(values);
-                       }}
-                       style={{ padding: '0.25rem', height: '100px' }}>
-                      {employees
-                        .filter(emp => (emp.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()))
-                        .map(emp => (
-                        <option key={emp.id} value={emp.id}>{emp.fullName}</option>
-                      ))}
-                    </select>
                   )}
-                  {employees && employees.length > 0 && <p className="text-xs text-muted mt-1">Hold Cmd/Ctrl to select multiple</p>}
                 </div>
               ) : (
                 <p style={{ fontWeight: 500 }}>{task.assignees?.map(a => a.employeeName).join(', ') || 'Unassigned'}</p>
