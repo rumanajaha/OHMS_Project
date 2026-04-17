@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check, ChevronRight, PlusCircle, User } from 'lucide-react';
+import { Check, ChevronRight, PlusCircle, User, KeyRound } from 'lucide-react';
 import { useEmployees } from '../context/EmployeeContext';
 import { usePositions } from '../context/PositionContext';
 import { useDepartments } from '../context/DepartmentContext';
@@ -12,6 +12,7 @@ import {
   getEmployeeStatusLabel,
   getPositionTitleById,
 } from '../utils/org';
+import { resetEmployeePasswordApi } from '../api/user';
 
 export const EmployeeForm = () => {
   const { id } = useParams();
@@ -26,6 +27,7 @@ export const EmployeeForm = () => {
   const [step, setStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [resetSuccess, setResetSuccess] = useState('');
   const [formData, setFormData] = useState({
     employeeCode: '',
     firstName: '',
@@ -294,10 +296,33 @@ export const EmployeeForm = () => {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
               <button type="button" className="btn btn-secondary" onClick={() => navigate('/admin/employees')}>Cancel</button>
+              {isEditMode && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                  onClick={async () => {
+                    if (!window.confirm('Are you sure you want to reset this employee\'s password back to their Employee Code?')) return;
+                    try {
+                      await resetEmployeePasswordApi(id);
+                      setResetSuccess('Password has been reset to: ' + formData.employeeCode);
+                    } catch (err) {
+                      alert(err.message || 'Failed to reset password.');
+                    }
+                  }}
+                >
+                  <KeyRound size={16} /> Reset Password
+                </button>
+              )}
               <button type="submit" className="btn btn-primary">
                 Next Step <ChevronRight size={16} />
               </button>
             </div>
+            {resetSuccess && (
+              <div style={{ marginTop: '1rem', padding: '0.875rem 1rem', backgroundColor: '#f0fdf4', color: '#16a34a', borderRadius: '8px', fontSize: '0.875rem', border: '1px solid #bbf7d0' }}>
+                {resetSuccess}
+              </div>
+            )}
           </form>
         ) : (
           <div className="animate-fade-in">
@@ -350,6 +375,24 @@ export const EmployeeForm = () => {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+              {isEditMode && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                  onClick={async () => {
+                    if (!window.confirm('Are you sure you want to reset this employee\'s password back to their Employee Code?')) return;
+                    try {
+                      await resetEmployeePasswordApi(id);
+                      setResetSuccess('Password has been reset to: ' + formData.employeeCode);
+                    } catch (err) {
+                      alert(err.message || 'Failed to reset password.');
+                    }
+                  }}
+                >
+                  <KeyRound size={16} /> Reset Password
+                </button>
+              )}
               <button type="button" className="btn btn-secondary" onClick={() => setStep(1)} disabled={isSaving}>
                 Back to Edit
               </button>
@@ -357,6 +400,12 @@ export const EmployeeForm = () => {
                 {isSaving ? 'Saving...' : isEditMode ? 'Save Changes' : 'Confirm & Create'}
               </button>
             </div>
+
+            {resetSuccess && (
+              <div style={{ marginTop: '1rem', padding: '0.875rem 1rem', backgroundColor: '#f0fdf4', color: '#16a34a', borderRadius: '8px', fontSize: '0.875rem', border: '1px solid #bbf7d0' }}>
+                {resetSuccess}
+              </div>
+            )}
           </div>
         )}
       </div>
