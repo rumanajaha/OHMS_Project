@@ -1,90 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDepartments } from '../context/DepartmentContext';
 import { useEmployees } from '../context/EmployeeContext';
+import { usePositions } from '../context/PositionContext';
+import { getEmployeeFullName, getPositionTitleById } from '../utils/org';
 
 export const DepartmentForm = () => {
   const { id } = useParams();
   const isEditing = !!id;
   const navigate = useNavigate();
   const { departments, addDepartment, updateDepartment } = useDepartments();
-  const { employees, updateEmployee } = useEmployees();
+  const { employees } = useEmployees();
+  const { positions } = usePositions();
 
   const [formData, setFormData] = useState({
     name: '',
     code: '',
     headEmployeeId: '',
   });
-
-  const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (isEditing && id) {
-      const dept = departments.find((d) => d.id == id);
+    if (!isEditing || !id) return;
 
-      if (dept) {
-        setFormData({ name: dept.name, code: dept.code, headEmployeeId: dept.headEmployeeId || '' });
-        const existingEmps = employees.filter((e) => e.departmentId === id).map((e) => e.id);
-        setSelectedEmployees(existingEmps);
-      }
+    const department = departments.find((entry) => String(entry.id) === String(id));
+    if (department) {
+      setFormData({
+        name: department.name || '',
+        code: department.code || '',
+        headEmployeeId: department.head?.id ? String(department.head.id) : '',
+      });
     }
-  }, [id, isEditing, departments, employees]);
+  }, [departments, id, isEditing]);
 
-  const eligibleHeads = employees;
-
-  const toggleEmployeeSelection = (empId) => {
-    setSelectedEmployees((prev) =>
-      prev.includes(empId) ? prev.filter((id) => id !== empId) : [...prev, empId]
-    );
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.code) {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!formData.name.trim() || !formData.code.trim()) {
       setError('Name and Code are required properties.');
       return;
     }
 
     setIsSaving(true);
+    setError('');
 
     try {
-      let targetDeptId = id;
+      const payload = {
+        name: formData.name.trim(),
+        code: formData.code.trim(),
+        headEmployeeId: formData.headEmployeeId ? Number(formData.headEmployeeId) : undefined,
+      };
 
-      if (!isEditing) {
-        targetDeptId = 'dept_' + Math.random().toString(36).substr(2, 9);
-        await addDepartment({
-          id: targetDeptId,
-          name: formData.name,
-          code: formData.code,
-          headEmployeeId: formData.headEmployeeId || undefined,
-        });
-      } else if (targetDeptId) {
-        await updateDepartment(targetDeptId, {
-          name: formData.name,
-          code: formData.code,
-          headEmployeeId: formData.headEmployeeId || undefined,
-        });
-      }
-
-      if (selectedEmployees.length > 0 && targetDeptId) {
-        for (const empId of selectedEmployees) {
-          await updateEmployee(empId, { departmentId: targetDeptId });
-        }
-      }
-
-      if (
-        formData.headEmployeeId &&
-        !selectedEmployees.includes(formData.headEmployeeId) &&
-        targetDeptId
-      ) {
-        await updateEmployee(formData.headEmployeeId, { departmentId: targetDeptId });
+      if (isEditing && id) {
+        await updateDepartment(id, payload);
+      } else {
+        await addDepartment(payload);
       }
 
       navigate('/admin/departments');
     } catch (err) {
-      setError('An error occurred whilst creating the department structure.');
+      setError(err.message || 'An error occurred whilst saving the department.');
       setIsSaving(false);
     }
   };
@@ -95,8 +70,8 @@ export const DepartmentForm = () => {
         <h1 className="h1">{isEditing ? 'Edit Department' : 'Add New Department'}</h1>
         <p className="text-muted text-sm">
           {isEditing
-            ? 'Modify organizational boundaries and reassess members.'
-            : 'Create a new organizational boundary and populate it immediately.'}
+            ? 'Update department details and leadership assignment.'
+            : 'Create a department container for positions and reporting lines.'}
         </p>
       </div>
 
@@ -133,7 +108,7 @@ export const DepartmentForm = () => {
                 className="form-input"
                 placeholder="e.g. Product Engineering"
                 value={formData.name}
-                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               />
             </div>
 
@@ -144,7 +119,7 @@ export const DepartmentForm = () => {
                 className="form-input"
                 placeholder="e.g. ENG-01"
                 value={formData.code}
-                onChange={(e) => setFormData((p) => ({ ...p, code: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, code: e.target.value }))}
               />
             </div>
           </div>
@@ -154,77 +129,19 @@ export const DepartmentForm = () => {
             <select
               className="form-input"
               value={formData.headEmployeeId}
-              onChange={(e) => setFormData((p) => ({ ...p, headEmployeeId: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, headEmployeeId: e.target.value }))}
             >
               <option value="">-- No Head Assigned --</option>
-              {eligibleHeads.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.firstName} {emp.lastName} ({emp.designation})
+              {employees.map((employee) => (
+                <option key={employee.id} value={employee.id}>
+                  {getEmployeeFullName(employee)} ({getPositionTitleById(positions, employee.positionId)})
                 </option>
               ))}
             </select>
             <p className="text-xs text-muted" style={{ marginTop: '0.25rem' }}>
-              The assigned head will automatically be drafted into this department upon saving.
+              Department nesting stays hidden in the current UI; this screen manages only the flat department record.
             </p>
           </div>
-
-          {/** 
-          <div id="employee-assignment">
-
-            <h3
-              className="h3"
-              style={{
-                marginBottom: '1rem',
-                marginTop: '2rem',
-                paddingBottom: '0.5rem',
-                borderBottom: '1px solid var(--border-color)',
-              }}
-            >
-              Employee Roster Assignment
-            </h3>
-            <p className="text-sm text-muted" style={{ marginBottom: '1rem' }}>
-              Select existing employees below to instantly migrate their bounds into this new department upon creation.
-            </p>
-
-            <div
-              style={{
-                maxHeight: '300px',
-                overflowY: 'auto',
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-md)',
-                padding: '1rem',
-                background: 'var(--bg-main)',
-              }}
-            >
-              {employees.map((emp) => (
-                <label
-                  key={emp.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem',
-                    padding: '0.75rem',
-                    borderBottom: '1px solid var(--border-color)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedEmployees.includes(emp.id)}
-                    onChange={() => toggleEmployeeSelection(emp.id)}
-                    style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 500 }}>
-                      {emp.firstName} {emp.lastName}
-                    </div>
-                    <div className="text-xs text-muted">{emp.designation}</div>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-          */}
 
           <div
             style={{

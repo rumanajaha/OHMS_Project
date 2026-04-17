@@ -6,6 +6,8 @@ import { usePositions } from '../context/PositionContext';
 import { useDepartments } from '../context/DepartmentContext';
 import {
   getDepartmentNameById,
+  getEffectiveManager,
+  getEmployeeFullName,
   getEmployeeStatusBadge,
   getEmployeeStatusLabel,
   getPositionTitleById,
@@ -32,7 +34,6 @@ export const EmployeeForm = () => {
     phone: '',
     hireDate: new Date().toISOString().split('T')[0],
     positionId: '',
-    managerId: '',
     status: 'ACTIVE',
     role: 'EMPLOYEE'
   });
@@ -64,7 +65,6 @@ export const EmployeeForm = () => {
         phone: existingEmployee.phone || '',
         hireDate: existingEmployee.hireDate || new Date().toISOString().split('T')[0],
         positionId: existingEmployee.positionId ? String(existingEmployee.positionId) : '',
-        managerId: existingEmployee.managerId ? String(existingEmployee.managerId) : '',
         status: existingEmployee.status || 'ACTIVE',
         role: existingEmployee.role || 'EMPLOYEE',
 
@@ -74,7 +74,11 @@ export const EmployeeForm = () => {
 
   const selectedPosition = positions.find((position) => position.id == formData.positionId);
   const derivedDepartment = departments.find((department) => department.id == selectedPosition?.departmentId);
-  const managerOptions = employees.filter((employee) => employee.id != id);
+  const effectiveManager = getEffectiveManager(
+    { id, positionId: formData.positionId ? Number(formData.positionId) : null },
+    employees,
+    positions
+  );
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -104,7 +108,7 @@ export const EmployeeForm = () => {
       }
 
       const payload = {
-        employeeCode: (formData.employeeCode || currentEmployeeCode || '').trim(),
+        employeeCode: formData.employeeCode.trim(),
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim(),
@@ -112,7 +116,7 @@ export const EmployeeForm = () => {
         hireDate: formData.hireDate,
         positionId: Number(formData.positionId),
         departmentId: selectedPosition.departmentId,
-        managerId: formData.managerId ? Number(formData.managerId) : null,
+        managerId: null,
         role: formData.role
     };
 
@@ -134,10 +138,7 @@ export const EmployeeForm = () => {
     }
   };
 
-  const managerName = formData.managerId
-    ? employees.find((employee) => employee.id == formData.managerId)?.fullName ||
-      employees.find((employee) => employee.id == formData.managerId)?.firstName
-    : 'None';
+  const managerName = effectiveManager ? getEmployeeFullName(effectiveManager) : 'None';
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -227,15 +228,12 @@ export const EmployeeForm = () => {
 
 
               <div className="form-group">
-                <label className="form-label">Manager</label>
-                <select name="managerId" value={formData.managerId} onChange={handleChange} className="form-input">
-                  <option value="">None (Top Level)</option>
-                  {managerOptions.map((employee) => (
-                    <option key={employee.id} value={employee.id}>
-                      {employee.fullName || `${employee.firstName} ${employee.lastName}`} ({getPositionTitleById(positions, employee.positionId)})
-                    </option>
-                  ))}
-                </select>
+                <label className="form-label">Reporting Manager</label>
+                <input
+                  className="form-input"
+                  value={selectedPosition ? `${managerName} (derived from parent position)` : 'Select a position first'}
+                  readOnly
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Status</label>
@@ -272,7 +270,11 @@ export const EmployeeForm = () => {
                     <input value={formData.employeeCode} className="form-input" readOnly />
                   </div>
 
-                  <div className="form-group">
+                 
+                </>
+              )}
+
+               <div className="form-group">
                     <label className="form-label">UserRole</label>
                     <select
                       name="role"
@@ -285,8 +287,6 @@ export const EmployeeForm = () => {
                       <option value="ADMIN">Admin</option>
                     </select>
                   </div>
-                </>
-              )}
 
 
               
