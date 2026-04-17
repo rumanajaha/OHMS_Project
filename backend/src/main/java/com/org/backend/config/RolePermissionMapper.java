@@ -11,6 +11,7 @@ public class RolePermissionMapper {
 
     private static final Map<String, List<Permission>> ROLE_PERMISSIONS = Map.of(
             "ADMIN", List.of(
+                    Permission.DEPARTMENT_VIEW_ALL,
                     Permission.DEPARTMENT_CREATE,
                     Permission.DEPARTMENT_UPDATE,
                     Permission.POSITION_CREATE,

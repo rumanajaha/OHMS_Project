@@ -1,6 +1,7 @@
 package com.org.backend.enums;
 
 public enum Permission {
+    DEPARTMENT_VIEW_ALL,
     DEPARTMENT_CREATE,
     DEPARTMENT_UPDATE,
     POSITION_CREATE,

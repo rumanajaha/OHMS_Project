@@ -22,6 +22,7 @@ public class DepartmentController {
 
     private final DepartmentService departmentService;
 
+    @PreAuthorize("hasAuthority('DEPARTMENT_VIEW_ALL')")
     @GetMapping
     public List<DepartmentDto> getAllDepartments(){
         return departmentService.getAllDepartments();
