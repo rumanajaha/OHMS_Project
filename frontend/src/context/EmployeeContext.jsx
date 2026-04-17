@@ -7,13 +7,17 @@ import {
   updateEmployeeStatusApi,
 } from '../api/employee';
 import { useAuth } from './AuthContext';
+import { usePositions } from './PositionContext';
 
 const EmployeeContext = createContext(undefined);
 
 export const EmployeeProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
+  const {positions} = usePositions();
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // console.log(positions);
   
 
   const fetchEmployees = async () => {
@@ -31,6 +35,16 @@ export const EmployeeProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(()=>{
+
+    employees.map((emp) => {
+      let position = positions.filter((pos) => emp.positionId == pos.id)?.[0]
+      
+      emp["position"] = position;
+      return emp
+    })
+  },[employees]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -97,7 +111,7 @@ export const EmployeeProvider = ({ children }) => {
     }
   };
 
-  const getEmployeeById = (id) => employees.find((employee) => String(employee.id) === String(id));
+  const getEmployeeById = (id) => employees.find((employee) => employee.id == id);
 
   return (
     <EmployeeContext.Provider

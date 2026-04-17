@@ -27,7 +27,6 @@ export const PositionForm = () => {
     if (existingPosition) {
       setFormData({
         title: existingPosition.title || '',
-        code: existingPosition.positionCode || '',
         departmentId: existingPosition.departmentId ? String(existingPosition.departmentId) : '',
         parentPositionId: existingPosition.parentPositionId ? String(existingPosition.parentPositionId) : '',
       });

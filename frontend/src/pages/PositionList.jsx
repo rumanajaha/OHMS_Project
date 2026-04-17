@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Briefcase, Edit2, Filter, Plus, Trash2 } from 'lucide-react';
 import { usePositions } from '../context/PositionContext';
 import { useDepartments } from '../context/DepartmentContext';
-import { getDepartmentNameById, getEmployeeByPositionId, getEmployeeFullName, getPositionTitleById } from '../utils/org';
+import { getDepartmentNameById, getPositionTitleById } from '../utils/org';
 import { useEmployees } from '../context/EmployeeContext';
 
 export const PositionList = () => {
@@ -26,9 +26,13 @@ export const PositionList = () => {
     });
   }, [positions, searchTerm, departmentFilter]);
 
+  const getEmployeeByPositionId = (posId)=>{
+    return employees.filter((emp) => emp.positionId == posId)?.[0];
+  } 
+
   const getEmployeeAssignedDetails = (posId)=>{
-    const employee = getEmployeeByPositionId(employees, posId);
-    return employee ? `${employee.employeeCode} - ${getEmployeeFullName(employee)}` : 'No employee assigned';
+    let employee = getEmployeeByPositionId(posId);
+    return employee?.employeeCode || "No employee assigned"
   }
 
   const handleDelete = async (positionId) => {

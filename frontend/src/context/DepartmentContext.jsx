@@ -39,7 +39,6 @@ export const DepartmentProvider = ({ children }) => {
     try{
       const newDept = await createDepartmentApi(dept);
       setDepartments((prev) => [...prev, newDept]);
-      return newDept;
     }catch(err){
       window.alert(err);
       console.log("Failed to create Department", err);
@@ -53,9 +52,8 @@ export const DepartmentProvider = ({ children }) => {
     try{
       const updatedDep = await updateDepartmentApi(id, updates);
       setDepartments((prev) =>
-        prev.map((d) => (d.id == id ? updatedDep : d))
+        prev.map((d) => (d.id == id ? { ...d, ...updates } : d))
       );
-      return updatedDep;
     }catch(err){
       window.alert(err);
       console.log("Failed to update Department", err);

@@ -5,13 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import { Search, Filter, Edit2, Trash2, Eye, Plus, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePositions } from '../context/PositionContext';
-import { getEffectiveManager, getEmployeeFullName, getPositionById } from '../utils/org';
 
 export const EmployeeList = () => {
   const { employees, isLoading, deleteEmployee } = useEmployees();
   const { departments } = useDepartments();
   const { hasPermission } = useAuth();
-  const { positions } = usePositions();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,9 +19,10 @@ export const EmployeeList = () => {
   const itemsPerPage = 5;
 
   const getDepartmentName = (id) => departments.find((d) => d.id === id)?.name || 'Unknown';
-  const getManagerName = (employee) => {
-    const manager = getEffectiveManager(employee, employees, positions);
-    return manager ? getEmployeeFullName(manager) : '-';
+  const getManagerName = (id) => {
+    if (!id) return '-';
+    const mgr = employees.find((e) => e.id === id);
+    return mgr ? `${mgr.firstName} ${mgr.lastName}` : 'Unknown';
   };
 
   const filteredEmployees = useMemo(() => {
@@ -32,7 +31,7 @@ export const EmployeeList = () => {
         `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         emp.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'All' || emp.status === statusFilter;
-      const matchesDept = departmentFilter === 'All' || String(emp.departmentId) === departmentFilter;
+      const matchesDept = departmentFilter === 'All' || emp.departmentId === departmentFilter;
       return matchesSearch && matchesStatus && matchesDept;
     });
   }, [employees, searchTerm, statusFilter, departmentFilter]);
@@ -190,14 +189,9 @@ export const EmployeeList = () => {
                     </td>
                     <td>
                       <div style={{ fontSize: '0.875rem' }}>{getDepartmentName(emp.departmentId)}</div>
-                      <div className="text-xs text-muted">
-                        {(() => {
-                          const position = getPositionById(positions, emp.positionId);
-                          return position ? `${position.title} (${position.positionCode || '-'})` : 'No position assigned';
-                        })()}
-                      </div>
+                      <div className="text-xs text-muted">{`${emp.position?.title}(${emp.position?.positionCode})` || "No position assigned"}</div>
                     </td>
-                    <td className="text-sm">{getManagerName(emp)}</td>
+                    <td className="text-sm">{getManagerName(emp.managerId)}</td>
                     <td>
                       <span
                         className={`badge badge-${emp.status === 'ACTIVE' ? 'success' : emp.status === 'On Leave' ? 'warning' : 'danger'}`}

@@ -2,25 +2,19 @@ import React from 'react';
 import { useEmployees } from '../context/EmployeeContext';
 import { useDepartments } from '../context/DepartmentContext';
 import { usePositions } from '../context/PositionContext';
-import { useTasks } from '../context/TaskContext';
-import { useNotifications } from '../context/NotificationContext';
 import { Users, Building, Activity, CheckSquare, Network } from 'lucide-react';
-import { getDirectReports, isManagerialPosition } from '../utils/org';
+import { isManagerialPosition } from '../utils/org';
 
 export const AdminDashboard = () => {
   const { employees } = useEmployees();
   const { departments } = useDepartments();
   const { positions } = usePositions();
-  const { tasks } = useTasks();
-  const { notifications, unreadCount } = useNotifications();
 
-  const managersCount = employees.filter((employee) => {
-    const position = positions.find((entry) => String(entry.id) === String(employee.positionId));
-    return isManagerialPosition(position?.title) || getDirectReports(employee, employees, positions).length > 0;
-  }).length;
+  // const managersCount = employees.filter((employee) =>
+  //   isManagerialPosition(positions.find((position) => position.id == employee.positionId)?.title)
+  // ).length;
 
-  const activeTasksCount = tasks.filter((task) => task.status !== 'Completed').length;
-  const recentNotifications = notifications.slice(0, 3);
+  const managersCount = 0;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -29,6 +23,7 @@ export const AdminDashboard = () => {
         <p className="text-muted text-sm">Welcome back to the administrative portal.</p>
       </div>
 
+      
       <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -67,17 +62,18 @@ export const AdminDashboard = () => {
               <CheckSquare size={18} />
             </div>
           </div>
-          <div className="h1" style={{ fontSize: '2rem' }}>{activeTasksCount}</div>
+          <div className="h1" style={{ fontSize: '2rem' }}>24</div>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '2rem' }}>
+        
         <div className="card" style={{ display: 'flex', flexDirection: 'column', minHeight: '400px' }}>
           <h2 className="h3" style={{ marginBottom: '1.5rem' }}>Organization Preview</h2>
           <div style={{ flex: 1, border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
             <div style={{ textAlign: 'center' }}>
               <Network size={48} style={{ opacity: 0.2, margin: '0 auto 1rem' }} />
-              <p className="text-sm">Hierarchy now follows parent positions.</p>
+              <p className="text-sm">Interactive graph preview will render here.</p>
               <a href="/admin/hierarchy" style={{ fontSize: '0.875rem', marginTop: '0.5rem', display: 'inline-block' }}>
                 Open Full Map &rarr;
               </a>
@@ -85,26 +81,25 @@ export const AdminDashboard = () => {
           </div>
         </div>
 
+      
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div className="card">
             <h2 className="h3" style={{ marginBottom: '1.5rem' }}>Notifications</h2>
-            <p className="text-sm text-muted" style={{ marginBottom: '1rem' }}>
-              {unreadCount} unread notification{unreadCount === 1 ? '' : 's'}
-            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {recentNotifications.length === 0 ? (
-                <p className="text-sm text-muted">No recent notifications.</p>
-              ) : (
-                recentNotifications.map((notification) => (
-                  <div key={notification.id} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notification.isRead ? 'var(--border-color)' : 'var(--primary)', marginTop: '6px' }} />
-                    <div>
-                      <p className="text-sm" style={{ fontWeight: 500, color: 'var(--text-main)' }}>{notification.title}</p>
-                      <p className="text-xs text-muted">{notification.time}</p>
-                    </div>
-                  </div>
-                ))
-              )}
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)', marginTop: '6px' }} />
+                <div>
+                  <p className="text-sm" style={{ fontWeight: 500, color: 'var(--text-main)' }}>Leave Request: Jane Doe</p>
+                  <p className="text-xs text-muted">2 hours ago</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--border-color)', marginTop: '6px' }} />
+                <div>
+                  <p className="text-sm" style={{ fontWeight: 500, color: 'var(--text-main)' }}>System update scheduled</p>
+                  <p className="text-xs text-muted">1 day ago</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -113,15 +108,15 @@ export const AdminDashboard = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ borderLeft: '2px solid var(--border-color)', paddingLeft: '1rem', marginLeft: '0.25rem' }}>
                 <p className="text-sm" style={{ color: 'var(--text-main)' }}>
-                  {positions.length} positions currently shape the reporting tree.
+                  New department <strong>Design</strong> created.
                 </p>
-                <p className="text-xs text-muted">Position-based hierarchy enabled</p>
+                <p className="text-xs text-muted">Just now</p>
               </div>
               <div style={{ borderLeft: '2px solid var(--border-color)', paddingLeft: '1rem', marginLeft: '0.25rem' }}>
                 <p className="text-sm" style={{ color: 'var(--text-main)' }}>
-                  Departments remain flat in the current UI while parent-department support stays available in the backend.
+                  Employee <strong>John Smith</strong> onboarded.
                 </p>
-                <p className="text-xs text-muted">Department hierarchy hidden for now</p>
+                <p className="text-xs text-muted">Yesterday</p>
               </div>
             </div>
           </div>

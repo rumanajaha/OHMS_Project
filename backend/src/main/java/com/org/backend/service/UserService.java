@@ -78,42 +78,6 @@ public class UserService {
         return mapUserToCurrentUserDto(user);
     }
 
-    @Transactional
-    public void changePassword(Long userId, String oldPassword, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND,
-                        "NOT_FOUND",
-                        "User not found")
-                );
-
-        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
-            throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    "BAD_REQUEST",
-                    "Incorrect old password"
-            );
-        }
-
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-    }
-
-    @Transactional
-    public void resetEmployeePassword(Long employeeId) {
-        User user = userRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND,
-                        "NOT_FOUND",
-                        "User not found for employee")
-                );
-
-        // Reset password to employee code
-        String newPassword = user.getEmployee().getEmployeeCode();
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-    }
-
     void deleteUserByEmpployee(Long employeeId){
         userRepository.deleteByEmployeeId(employeeId);
         userRepository.flush();
@@ -127,8 +91,7 @@ public class UserService {
                 user.getUsername(),
                 user.getEmployee().getFullName(),
                 user.getEmployee().getEmail(),
-                user.getEmployee().getPosition() != null ? user.getEmployee().getPosition().getTitle() : "Unassigned",
-                user.getEmployee().getPosition() != null && user.getEmployee().getPosition().getDepartment() != null
-                        ? user.getEmployee().getPosition().getDepartment().getName() : "Unassigned");
+                user.getEmployee().getPosition().getTitle(),
+                user.getEmployee().getPosition().getDepartment().getName());
     }
 }

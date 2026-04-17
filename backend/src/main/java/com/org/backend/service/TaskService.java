@@ -26,7 +26,6 @@ public class TaskService {
     private final TaskAssignmentRepository taskAssignmentRepository;
     private final TaskCommentRepository taskCommentRepository;
     private final EmployeeRepository employeeRepository;
-    private final NotificationService notificationService;
 
     @Transactional
     public TaskDto createTask(TaskCreateRequestDto request){
@@ -50,17 +49,6 @@ public class TaskService {
                 assignment.setTask(task);
                 assignment.setEmployee(assignee);
                 taskAssignmentRepository.save(assignment);
-                
-                if (assignee.getUser() != null) {
-                    notificationService.notify(
-                        assignee.getUser().getId(),
-                        "New Task Assigned",
-                        "You have been assigned to task: " + task.getTitle(),
-                        com.org.backend.enums.NotificationType.TASK_ASSIGNED,
-                        task.getId(),
-                        assignedBy.getUser() != null ? assignedBy.getUser().getId() : 1L
-                    );
-                }
             }
         }
         return mapToDto(task);
@@ -100,17 +88,6 @@ public class TaskService {
             assignment.setTask(t);
             assignment.setEmployee(employee);
             taskAssignmentRepository.save(assignment);
-            
-            if (employee.getUser() != null) {
-                notificationService.notify(
-                    employee.getUser().getId(),
-                    "New Task Assigned",
-                    "You have been assigned to task: " + t.getTitle(),
-                    com.org.backend.enums.NotificationType.TASK_ASSIGNED,
-                    t.getId(),
-                    1L
-                );
-            }
         }
         return mapToDto(t);
     }
