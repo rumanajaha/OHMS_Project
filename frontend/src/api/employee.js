@@ -36,3 +36,14 @@ export const searchEmployeesApi = (params) => {
     const query = new URLSearchParams(params).toString();
     return apiClient(`${PREFIX}/search?${query}`);
 }
+
+export const getMyTeamDynamicApi = (employeeId) => {
+    return apiClient(`${PREFIX}/${employeeId}/team`);
+}
+
+export const updateEmployeeProfileApi = (employeeId, profileData) => {
+    return apiClient(`${PREFIX}/${employeeId}/profile`, {
+        method: "PATCH",
+        body: JSON.stringify(profileData),
+    });
+}

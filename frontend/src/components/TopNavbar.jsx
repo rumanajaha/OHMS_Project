@@ -15,7 +15,6 @@ export const TopNavbar = () => {
   const { notifications, unreadCount, markAsRead } = useNotifications();
   const navigate = useNavigate();
   const [showProfileDropdown, setShowProfileDropdown] = React.useState(false);
-  const [showNotifications, setShowNotifications] = React.useState(false);
   const [showPasswordModal, setShowPasswordModal] = React.useState(false);
   const [passwordData, setPasswordData] = React.useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [passwordError, setPasswordError] = React.useState('');
@@ -141,7 +140,7 @@ export const TopNavbar = () => {
             <Search size={16} color="var(--text-muted)" />
             <input
               type="text"
-              placeholder="Search employees..."
+              placeholder="Search employees or skills..."
               value={globalSearchTerm}
               onChange={(e) => {
                 setGlobalSearchTerm(e.target.value);
@@ -245,7 +244,7 @@ export const TopNavbar = () => {
 
         <div style={{ position: 'relative' }}>
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={() => navigate(`/${user?.role.toLowerCase()}/notifications`)}
             style={{
               background: 'var(--bg-main)',
               border: 'none',
@@ -275,60 +274,6 @@ export const TopNavbar = () => {
               />
             )}
           </button>
-          
-          {showNotifications && (
-            <div
-              className="dropdown-menu"
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: '100%',
-                marginTop: '0.75rem',
-                width: '320px',
-                zIndex: 100,
-                maxHeight: '400px',
-                overflowY: 'auto'
-              }}
-            >
-              <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h4 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600 }}>Notifications</h4>
-                <span className="badge badge-primary">{unreadCount} New</span>
-              </div>
-              <div style={{ padding: '0.5rem' }}>
-                {notifications.length === 0 ? (
-                  <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                    No notifications.
-                  </div>
-                ) : (
-                  notifications.map((notification) => (
-                    <button
-                      key={notification.id}
-                      className="dropdown-item"
-                      onClick={() => {
-                        if (!notification.isRead) markAsRead(notification.id);
-                        navigate('/notifications');
-                        setShowNotifications(false);
-                      }}
-                      style={{
-                        padding: '0.75rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.25rem',
-                        alignItems: 'flex-start',
-                        background: notification.isRead ? 'transparent' : 'var(--bg-subtle)'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.8125rem' }}>{notification.title}</span>
-                        {!notification.isRead && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--primary)' }} />}
-                      </div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'left' }}>{notification.message}</span>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         <div style={{ position: 'relative' }}>

@@ -34,6 +34,10 @@ public class EmployeeService {
         try {
             jdbcTemplate.execute("ALTER TABLE employees MODIFY position_id BIGINT NULL");
             jdbcTemplate.execute("ALTER TABLE employees MODIFY department_id BIGINT NULL");
+            jdbcTemplate.execute("ALTER TABLE employees ADD COLUMN skills TEXT NULL");
+            jdbcTemplate.execute("ALTER TABLE employees ADD COLUMN profile_picture_base64 LONGTEXT NULL");
+            jdbcTemplate.execute("ALTER TABLE employees ADD COLUMN resume_base64 LONGTEXT NULL");
+            jdbcTemplate.execute("ALTER TABLE employees ADD COLUMN resume_name VARCHAR(255) NULL");
         } catch(Exception e) {
             System.out.println("Schema modification skipped: " + e.getMessage());
         }
@@ -160,6 +164,20 @@ public class EmployeeService {
         return mapToDto(employee);
     }
 
+    @Transactional
+    public EmployeeDto updateEmployeeProfile(Long employeeId, com.org.backend.dto.EmployeeProfileUpdateRequestDto request) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid employee id"));
+        
+        if (request.skills() != null) employee.setSkills(request.skills());
+        if (request.profilePictureBase64() != null) employee.setProfilePictureBase64(request.profilePictureBase64());
+        if (request.resumeBase64() != null) employee.setResumeBase64(request.resumeBase64());
+        if (request.resumeName() != null) employee.setResumeName(request.resumeName());
+
+        employee = employeeRepository.save(employee);
+        return mapToDto(employee);
+    }
+
     EmployeeDto mapToDto(Employee employee) {
         return new EmployeeDto(
                 employee.getId(),
@@ -174,7 +192,11 @@ public class EmployeeService {
                 employee.getDepartment() != null ? employee.getDepartment().getId() : null,
                 employee.getManager() != null ? employee.getManager().getId() : null,
                 employee.getStatus(),
-                employee.getUser().getUserRole().toString()
+                employee.getUser().getUserRole().toString(),
+                employee.getSkills(),
+                employee.getProfilePictureBase64(),
+                employee.getResumeBase64(),
+                employee.getResumeName()
         );
     }
     public List<EmployeeDto> getAllEmployees(){
@@ -214,10 +236,39 @@ public class EmployeeService {
         List<Employee> employees = employeeRepository.findByManagerId(managerId);
         return employees.stream().map(this::mapToDto).toList();
     }
+
+    public List<EmployeeDto> getMyTeamDynamic(Long employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid employee id"));
+        
+        Position position = employee.getPosition();
+        if (position == null) return java.util.Collections.emptyList();
+        
+        List<Position> teamPositions = new java.util.ArrayList<>();
+        
+        if (position.getSubPositions() != null && !position.getSubPositions().isEmpty()) {
+            // Manager: Return Subordinates
+            teamPositions.addAll(position.getSubPositions());
+        } else {
+            // Peer: Return Peers matching the same parent Head
+            Position parent = position.getParentPosition();
+            if (parent != null && parent.getSubPositions() != null) {
+                teamPositions.addAll(parent.getSubPositions());
+            }
+        }
+        
+        if (teamPositions.isEmpty()) return java.util.Collections.emptyList();
+        
+        return employeeRepository.findByPositionIn(teamPositions)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
     public List<EmployeeDto> searchEmployees(String name, Long departmentId, String departmentName,Long positionId, String positionTitle,Long managerId, EmployeeStatus status){
         List<Employee> employees = employeeRepository.findAll();
         if (name!=null && !name.isBlank()){
-            employees = employeeRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name,name);
+            employees = employeeRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrSkillsContainingIgnoreCase(name,name,name);
         }else{ employees = employeeRepository.findAll();}
         if(departmentId != null){
             employees = employees.stream().filter(e -> e.getDepartment() != null &&  e.getDepartment().getId().equals(departmentId)).toList(); }

@@ -6,6 +6,7 @@ import {
   updatePositionApi,
 } from '../api/position';
 import { useAuth } from './AuthContext';
+import { logActivity } from '../utils/activity';
 
 const PositionContext = createContext(undefined);
 
@@ -41,6 +42,7 @@ export const PositionProvider = ({ children }) => {
     try {
       const newPosition = await createPositionApi(positionData);
       setPositions((prev) => [...prev, newPosition]);
+      logActivity('Position Created', `Position ${positionData.title} was created.`, 'success');
       return newPosition;
     }catch(err){
       window.alert(err);
@@ -54,6 +56,7 @@ export const PositionProvider = ({ children }) => {
     try {
       const updatedPosition = await updatePositionApi(id, positionData);
       setPositions((prev) => prev.map((position) => (position.id == id ? updatedPosition : position)));
+      logActivity('Position Updated', `Details for position ${positionData.title || id} were updated.`, 'info');
       return updatedPosition;
     }catch(err){
       window.alert(err);
@@ -67,6 +70,7 @@ export const PositionProvider = ({ children }) => {
     try {
       await deletePositionApi(id);
       setPositions((prev) => prev.filter((position) => position.id != id));
+      logActivity('Position Removed', `A position was removed from the hierarchy.`, 'danger');
     }catch(err){
       window.alert(err);
     } finally {

@@ -7,6 +7,7 @@ import { useNotifications } from '../context/NotificationContext';
 import { Users, CheckSquare, Bell, ChevronRight, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getDirectReports, getEmployeeFullName, getPositionTitleById } from '../utils/org';
+import { getActivities } from '../utils/activity';
 
 export const ManagerDashboard = () => {
   const { employees } = useEmployees();
@@ -15,6 +16,15 @@ export const ManagerDashboard = () => {
   const { tasks } = useTasks();
   const { notifications } = useNotifications();
   const navigate = useNavigate();
+  const [recentActivities, setRecentActivities] = useState(getActivities());
+
+  React.useEffect(() => {
+    const handleActivity = () => {
+      setRecentActivities(getActivities());
+    };
+    window.addEventListener('ohms-activity', handleActivity);
+    return () => window.removeEventListener('ohms-activity', handleActivity);
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -163,6 +173,29 @@ export const ManagerDashboard = () => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', marginTop: '1rem' }}>
+        <div className="card" style={{ padding: 0 }}>
+          <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+            <h2 className="h3">Recent Activity Feed</h2>
+          </div>
+          <div style={{ padding: '1.5rem', maxHeight: '350px', overflowY: 'auto' }}>
+            {recentActivities.length === 0 ? (
+              <p className="text-muted text-sm" style={{ padding: '1rem', textAlign: 'center' }}>No recent activities logged.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {recentActivities.slice(0, 10).map((activity) => (
+                  <div key={activity.id} style={{ borderLeft: `2px solid var(--${activity.type === 'danger' ? 'danger' : activity.type === 'success' ? 'success' : activity.type === 'warning' ? 'warning' : 'primary'})`, paddingLeft: '1rem', marginLeft: '0.25rem' }}>
+                    <p className="text-sm" style={{ color: 'var(--text-main)', fontWeight: 500 }}>{activity.title}</p>
+                    <p className="text-xs text-muted" style={{ marginBottom: '0.25rem' }}>{activity.message}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>{new Date(activity.timestamp).toLocaleString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+           </div>
         </div>
       </div>
     </div>

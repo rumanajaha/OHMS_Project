@@ -67,7 +67,7 @@ const App = () => {
                             <Route path="/admin/notifications" element={<Notifications />} />
                             <Route path="/admin/notifications/:id" element={<NotificationDetail />} />
                             <Route path="/admin/settings" element={<Settings />} />
-                            <Route path="/admin/profile" element={<Settings />} />
+                            <Route path="/admin/profile" element={<MyProfile />} />
                           </Route>
 
                           <Route element={<RoleRoute allowedRoles={['MANAGER']} />}>
@@ -79,11 +79,12 @@ const App = () => {
                             <Route path="/manager/notifications" element={<Notifications />} />
                             <Route path="/manager/notifications/:id" element={<NotificationDetail />} />
                             <Route path="/manager/settings" element={<Settings />} />
-                            <Route path="/manager/profile" element={<Settings />} />
+                            <Route path="/manager/profile" element={<MyProfile />} />
                           </Route>
 
                           <Route element={<RoleRoute allowedRoles={['EMPLOYEE']} />}>
                             <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
+                            <Route path="/employee/team" element={<MyTeam />} />
                             <Route path="/employee/profile" element={<MyProfile />} />
                             <Route path="/employee/tasks" element={<TaskManagement />} />
                             <Route path="/employee/tasks/:id" element={<TaskDetail />} />

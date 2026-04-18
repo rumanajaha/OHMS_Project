@@ -7,6 +7,7 @@ import {
   updateEmployeeStatusApi,
 } from '../api/employee';
 import { useAuth } from './AuthContext';
+import { logActivity } from '../utils/activity';
 
 const EmployeeContext = createContext(undefined);
 
@@ -50,6 +51,11 @@ export const EmployeeProvider = ({ children }) => {
     try {
       const createdEmployee = await createEmployeeApi(employeeData);
       setEmployees((prev) => [...prev, createdEmployee]);
+      logActivity(
+        'Employee Created',
+        `Added ${employeeData.firstName} ${employeeData.lastName} (${employeeData.employeeCode})`,
+        'success'
+      );
       return createdEmployee;
     }catch(err){
       window.alert(err.message || 'Failed to create employee');
@@ -64,6 +70,11 @@ export const EmployeeProvider = ({ children }) => {
     try {
       const updatedEmployee = await updateEmployeeApi(id, employeeData);
       setEmployees((prev) => prev.map((employee) => (employee.id == id ? updatedEmployee : employee)));
+      logActivity(
+        'Employee Updated',
+        `Updated profile for ${employeeData.firstName} ${employeeData.lastName}`,
+        'info'
+      );
       return updatedEmployee;
     }catch(err){
       window.alert(err.message || 'Failed to update employee');
@@ -77,6 +88,11 @@ export const EmployeeProvider = ({ children }) => {
     try {
       const updatedEmployee = await updateEmployeeStatusApi(id, status);
       setEmployees((prev) => prev.map((employee) => (employee.id == id ? updatedEmployee : employee)));
+      logActivity(
+        'Status Changed',
+        `Employee status changed to ${status}`,
+        'warning'
+      );
       return updatedEmployee;
     }catch(err){
       window.alert(err.message || 'Failed to update employee');
@@ -90,6 +106,7 @@ export const EmployeeProvider = ({ children }) => {
     try {
       await deleteEmployeeApi(id);
       setEmployees((prev) => prev.filter((employee) => employee.id != id));
+      logActivity('Employee Removed', 'An employee was deleted from the system.', 'danger');
     }catch(err){
       window.alert(err.message || 'Failed to delete employee');
     } finally {

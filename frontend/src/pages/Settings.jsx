@@ -39,19 +39,7 @@ export const Settings = () => {
           </div>
         </div>
 
-        <div>
-          <h3 className="h3" style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-            Notifications
-          </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <input type="checkbox" id="email_notif" defaultChecked />
-            <label htmlFor="email_notif" style={{ fontSize: '0.875rem' }}>Receive email notifications for Tasks</label>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <input type="checkbox" id="sys_notif" defaultChecked />
-            <label htmlFor="sys_notif" style={{ fontSize: '0.875rem' }}>Receive system alerts for company updates</label>
-          </div>
-        </div>
+
 
         <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem', display: 'flex', gap: '1rem' }}>
           <button className="btn btn-primary" onClick={() => alert('Settings saved successfully!')}>{dict.save}</button>

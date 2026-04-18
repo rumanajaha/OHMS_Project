@@ -50,18 +50,18 @@ export const Login = () => {
   // }, [isAuthenticated, isLoading, navigate, location]);
   React.useEffect(() => {
     if (!isLoading && isAuthenticated) {
-  
+
       const storedUser = JSON.parse(localStorage.getItem("authUser"));
       const role = storedUser?.role;
       if (role === "ADMIN") {
         navigate("/admin/dashboard", { replace: true });
-      } 
+      }
       else if (role === "MANAGER") {
         navigate("/manager/dashboard", { replace: true });
-      } 
+      }
       else if (role === "EMPLOYEE") {
         navigate("/employee/dashboard", { replace: true });
-      } 
+      }
       else {
         navigate("/login");
       }
@@ -90,7 +90,7 @@ export const Login = () => {
     }
 
     try {
-      await login(username, password);   
+      await login(username, password);
     } catch (err) {
       setError(err.message || 'Invalid username or password. Please try again.');
     } finally {
@@ -100,7 +100,7 @@ export const Login = () => {
 
   const handleDemoFill = (demoRole) => {
     setActivePanel(demoRole);
-    const demoUsername = demoRole.toLowerCase();   
+    const demoUsername = demoRole.toLowerCase();
     setUsername(demoUsername);
     setPassword('password123');
   };
@@ -110,7 +110,7 @@ export const Login = () => {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex' }}>
-     
+
       <div
         style={{
           flex: 1,
@@ -170,7 +170,7 @@ export const Login = () => {
         </div>
       </div>
 
-    
+
       <div
         style={{
           width: '480px',
@@ -202,23 +202,23 @@ export const Login = () => {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">Username</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="admin / manager / employee" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)} 
+              <input
+                type="text"
+                className="form-input"
+                placeholder="admin / manager / employee"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label">Password</label>
-              <input 
-                type="password" 
-                className="form-input" 
-                placeholder="••••••••" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
+              <input
+                type="password"
+                className="form-input"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
@@ -226,21 +226,21 @@ export const Login = () => {
               type="submit"
               className="btn btn-primary"
               disabled={isSubmitting}
-              style={{ 
-                width: '100%', 
-                padding: '0.875rem', 
-                fontSize: '1rem', 
-                borderRadius: '8px', 
+              style={{
+                width: '100%',
+                padding: '0.875rem',
+                fontSize: '1rem',
+                borderRadius: '8px',
                 marginTop: '0.5rem',
-                opacity: isSubmitting ? 0.8 : 1 
+                opacity: isSubmitting ? 0.8 : 1
               }}
             >
               {isSubmitting ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-         
-          <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
+
+          {/* <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Quick demo access:</p>
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
               {['Admin', 'Manager', 'Employee'].map((r) => (
@@ -262,7 +262,7 @@ export const Login = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

@@ -37,10 +37,6 @@ export const EmployeeDashboard = () => {
 
   const unreadNotes = notifications.filter((n) => !n.isRead);
 
-  const regularCount = Math.floor((myTeam.length + 1) * 0.8);
-  const leaveCount = 1;
-  const irregularCount = myTeam.length + 1 - regularCount - leaveCount;
-
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -122,29 +118,6 @@ export const EmployeeDashboard = () => {
         </div>
       </div>
 
-      <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-        <div className="card" style={{ padding: '1.25rem', borderLeft: '4px solid var(--success)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <UserCheck size={16} className="text-success" />
-            <span className="text-sm font-medium">Regular (Present)</span>
-          </div>
-          <div className="h2">{regularCount}</div>
-        </div>
-        <div className="card" style={{ padding: '1.25rem', borderLeft: '4px solid var(--warning)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <Activity size={16} className="text-warning" />
-            <span className="text-sm font-medium">Irregular (Late/Half)</span>
-          </div>
-          <div className="h2">{irregularCount}</div>
-        </div>
-        <div className="card" style={{ padding: '1.25rem', borderLeft: '4px solid var(--danger)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <UserX size={16} className="text-danger" />
-            <span className="text-sm font-medium">On Leave</span>
-          </div>
-          <div className="h2">{leaveCount}</div>
-        </div>
-      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
         <div className="card" style={{ padding: 0 }}>

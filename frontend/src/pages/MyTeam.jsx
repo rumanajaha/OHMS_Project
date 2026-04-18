@@ -1,25 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useEmployees } from '../context/EmployeeContext';
 import { usePositions } from '../context/PositionContext';
-import { getDirectReports, getEmployeeFullName, getEmployeeStatusBadge, getEmployeeStatusLabel, getPositionTitleById } from '../utils/org';
+import { getEmployeeFullName, getEmployeeStatusBadge, getEmployeeStatusLabel, getPositionTitleById } from '../utils/org';
+import { getMyTeamDynamicApi } from '../api/employee';
 
 export const MyTeam = () => {
   const { user } = useAuth();
   const { employees } = useEmployees();
   const { positions } = usePositions();
+  
+  const [myTeam, setMyTeam] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const managerData = employees.find((e) => e.id === user?.employeeId);
-  const myTeam = getDirectReports(managerData, employees, positions);
+  const managerData = employees.find((e) => String(e.id) === String(user?.employeeId));
+
+  useEffect(() => {
+    const fetchTeam = async () => {
+      if (!user?.employeeId) return;
+      setIsLoading(true);
+      try {
+        const teamData = await getMyTeamDynamicApi(user.employeeId);
+        setMyTeam(teamData);
+      } catch (err) {
+        console.error('Failed to load dynamic team', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTeam();
+  }, [user]);
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
         <h1 className="h1">My Team</h1>
-        <p className="text-muted text-sm">Visualizing your direct reports.</p>
+        <p className="text-muted text-sm">Visualizing your structured team network.</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+        
+        {isLoading ? (
+          <div style={{ padding: '2rem' }}>Loading team structure...</div>
+        ) : (
+          <>
        
         {managerData && (
           <div className="card" style={{ width: '260px', textAlign: 'center', position: 'relative', zIndex: 10, borderTop: '4px solid var(--primary)' }}>
@@ -75,8 +99,10 @@ export const MyTeam = () => {
 
         {myTeam.length === 0 && (
           <div style={{ marginTop: '2rem', color: 'var(--text-muted)' }}>
-            <p>You have no direct reports.</p>
+            <p>You currently do not have any team members assigned.</p>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>

@@ -17,5 +17,9 @@ public record EmployeeDto(
         Long departmentId,
         Long managerId,
         EmployeeStatus status,
-        String role
+        String role,
+        String skills,
+        String profilePictureBase64,
+        String resumeBase64,
+        String resumeName
 ) {}

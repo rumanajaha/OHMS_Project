@@ -4,16 +4,26 @@ import { useAuth } from '../context/AuthContext';
 import { useDocuments } from '../context/DocumentContext';
 import { FileText, Tags, Upload, Lock, Eye, EyeOff } from 'lucide-react';
 import { changePasswordApi } from '../api/user';
+import { useEmployees } from '../context/EmployeeContext';
+import { updateEmployeeProfileApi } from '../api/employee';
+import { logActivity } from '../utils/activity';
 
 export const MyProfile = () => {
   const { user, updateUser } = useAuth();
   const { documents, uploadDocument, deleteDocument } = useDocuments();
 
-  const [skills, setSkills] = useState(['React', 'TypeScript', 'Node.js']);
+  const { employees } = useEmployees();
+  const currentEmployee = employees.find(e => String(e.id) === String(user?.employeeId));
+
+  const [skills, setSkills] = useState(currentEmployee?.skills ? currentEmployee.skills.split(',').map(s=>s.trim()) : []);
   const [newSkill, setNewSkill] = useState('');
   const [name, setName] = useState(user?.name || '');
-  const [phone, setPhone] = useState('555-0199');
+  const [phone, setPhone] = useState(currentEmployee?.phone || '555-0199');
   const [isSaving, setIsSaving] = useState(false);
+  const [avatar, setAvatar] = useState(currentEmployee?.profilePictureBase64 || null);
+  const [resumeData, setResumeData] = useState({ name: currentEmployee?.resumeName || '', base64: currentEmployee?.resumeBase64 || '' });
+  
+  const avatarInputRef = useRef(null);
 
   // Password change state
   const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
@@ -40,20 +50,45 @@ export const MyProfile = () => {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    await updateUser({ name });
-    await new Promise((r) => setTimeout(r, 500));
-    setIsSaving(false);
+    try {
+        await updateUser({ name });
+        if (user?.employeeId) {
+            await updateEmployeeProfileApi(user.employeeId, {
+                skills: skills.join(', '),
+                profilePictureBase64: avatar,
+                resumeBase64: resumeData.base64,
+                resumeName: resumeData.name
+            });
+            logActivity('Profile Updated', 'Your profile details were updated.', 'success');
+            window.alert('Profile successfully updated!');
+        }
+    } catch(err) {
+        window.alert('Failed to save profile: '+err.message);
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const handleResumeUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      await uploadDocument({
-        name: file.name,
-        size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-        type: file.type.split('/')[1] || 'Unknown',
-      });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+          setResumeData({ name: file.name, base64: reader.result });
+      };
+      reader.readAsDataURL(file);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+          setAvatar(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -95,10 +130,11 @@ export const MyProfile = () => {
 
       <div className="card" style={{ marginBottom: '2rem', display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ width: '120px', height: '120px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', fontWeight: 600 }}>
-            {user?.name?.charAt(0) || 'U'}
+          <div style={{ position: 'relative', width: '120px', height: '120px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', fontWeight: 600, overflow: 'hidden' }}>
+            {avatar ? <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user?.name?.charAt(0) || 'U')}
           </div>
-          <button className="btn btn-secondary text-sm">Change Picture</button>
+          <input type="file" ref={avatarInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleAvatarUpload} />
+          <button className="btn btn-secondary text-sm" onClick={() => avatarInputRef.current?.click()}>Change Picture</button>
         </div>
 
         <div style={{ flex: 1 }}>
@@ -240,19 +276,17 @@ export const MyProfile = () => {
               <Upload size={14} style={{ marginRight: '0.5rem' }} />Select File
             </button>
           </div>
-          {myResumes.length > 0 ? (
-            myResumes.map((resume) => (
-              <div key={resume.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', marginBottom: '0.5rem' }}>
+          {resumeData.name ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', marginBottom: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <FileText size={16} className="text-muted" />
-                  <span className="text-sm font-medium">{resume.name}</span>
+                  <span className="text-sm font-medium">{resumeData.name}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button className="btn btn-ghost text-sm" style={{ padding: '0.25rem 0.5rem' }}>Download</button>
-                  <button className="btn btn-ghost text-danger text-sm" style={{ padding: '0.25rem 0.5rem' }} onClick={() => deleteDocument(resume.id)}>Delete</button>
+                  {resumeData.base64 && <a href={resumeData.base64} download={resumeData.name} className="btn btn-ghost text-sm" style={{ padding: '0.25rem 0.5rem', textDecoration:'none' }}>Download</a>}
+                  <button className="btn btn-ghost text-danger text-sm" style={{ padding: '0.25rem 0.5rem' }} onClick={() => setResumeData({name:'', base64:''})}>Delete</button>
                 </div>
               </div>
-            ))
           ) : (
             <p className="text-muted text-sm text-center">No resumes uploaded yet.</p>
           )}

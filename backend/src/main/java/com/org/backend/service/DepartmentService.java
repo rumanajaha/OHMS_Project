@@ -63,6 +63,8 @@ public class DepartmentService {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Head employee id"));
 
             department.setHeadEmployee(headEmployee);
+            headEmployee.setDepartment(department);
+            employeeRepository.save(headEmployee);
         }
 
         department = departmentRepository.save(department);
@@ -96,6 +98,8 @@ public class DepartmentService {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Head employee id"));
 
             department.setHeadEmployee(headEmployee);
+            headEmployee.setDepartment(department);
+            employeeRepository.save(headEmployee);
         }
 
         department = departmentRepository.save(department);

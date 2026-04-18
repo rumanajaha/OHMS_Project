@@ -56,10 +56,24 @@ public class EmployeeController {
         return employeeService.getMyTeam(managerId);
     }
 
+    @PreAuthorize("hasAuthority('EMPLOYEE_VIEW_TEAM')")
+    @GetMapping("/{employeeId}/team")
+    public List<EmployeeDto> getMyTeamDynamic(@PathVariable Long employeeId) {
+        return employeeService.getMyTeamDynamic(employeeId);
+    }
+
     @PreAuthorize("hasAuthority('EMPLOYEE_UPDATE')")
     @PatchMapping("/{employeeId}/status")
     public EmployeeDto changeEmployeeStatus(@PathVariable Long employeeId, @RequestParam EmployeeStatus status){
         return employeeService.changeEmployeeStatus(employeeId, status);
+    }
+
+    @PreAuthorize("hasAuthority('EMPLOYEE_VIEW_SELF')")
+    @PatchMapping("/{employeeId}/profile")
+    public EmployeeDto updateEmployeeProfile(
+            @PathVariable Long employeeId,
+            @Valid @RequestBody com.org.backend.dto.EmployeeProfileUpdateRequestDto request) {
+        return employeeService.updateEmployeeProfile(employeeId, request);
     }
 
     @PreAuthorize("hasAuthority('EMPLOYEE_SEARCH')")

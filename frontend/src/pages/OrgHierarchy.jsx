@@ -116,6 +116,26 @@ const CustomNode = ({ data }) => {
         </div>
       )}
 
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          data.onPencilClick(data.positionId);
+        }}
+        style={{
+          position: 'absolute',
+          top: '0.5rem',
+          right: '0.5rem',
+          background: 'none',
+          border: 'none',
+          color: 'var(--text-muted)',
+          cursor: 'pointer',
+          padding: '0.25rem',
+        }}
+        title="Restructure / Change Parent"
+      >
+        <Edit2 size={14} />
+      </button>
+
       <Handle
         type="source"
         position={Position.Bottom}
@@ -133,6 +153,9 @@ export const OrgHierarchy = () => {
   const { positions, fetchPositions } = usePositions();
   const navigate = useNavigate();
   const [selectedNodeData, setSelectedNodeData] = React.useState(null);
+  
+  const [restructureNodeId, setRestructureNodeId] = React.useState(null);
+  const [newParentId, setNewParentId] = React.useState('');
   
   const unassignedEmployees = useMemo(() => {
     return employees.filter(emp => !emp.positionId && emp.status !== 'TERMINATED');
@@ -250,6 +273,7 @@ export const OrgHierarchy = () => {
           rawEmployee: employee || null,
           onAssignEmployee: handleAssignEmployee,
           onChangeParent: handleChangeParent,
+          onPencilClick: (posId) => setRestructureNodeId(posId),
         },
       });
 
@@ -299,6 +323,61 @@ export const OrgHierarchy = () => {
       <div
         style={{ flex: 1, display: 'flex', gap: '1.5rem', minHeight: '600px', overflow: 'hidden' }}
       >
+        {restructureNodeId && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.5)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <div className="card animate-fade-in" style={{ width: '400px', padding: '2rem' }}>
+              <h3 className="h3" style={{ marginBottom: '1rem' }}>Restructure Hierarchy</h3>
+              <p className="text-sm text-muted" style={{ marginBottom: '1.5rem' }}>
+                Select a new parent position for this node.
+              </p>
+              <select
+                className="form-input"
+                value={newParentId}
+                onChange={(e) => setNewParentId(e.target.value)}
+                style={{ marginBottom: '1.5rem' }}
+              >
+                <option value="">-- Make this a Root Note (No Parent) --</option>
+                {positions
+                  .filter((p) => p.id !== restructureNodeId)
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>{p.title}</option>
+                  ))}
+              </select>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setRestructureNodeId(null);
+                    setNewParentId('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    handleChangeParent(restructureNodeId, newParentId ? Number(newParentId) : null);
+                    setRestructureNodeId(null);
+                    setNewParentId('');
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="card" style={{ width: '280px', display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
           <h3 className="h3" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <UserPlus size={18} />
