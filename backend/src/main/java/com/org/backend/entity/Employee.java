@@ -64,6 +64,19 @@ public class Employee {
     @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
     private List<Employee> subordinates;
 
+    @Column(columnDefinition = "TEXT")
+    private String skills;
+
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String profilePictureBase64;
+
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String resumeBase64;
+
+    private String resumeName;
+
     @Enumerated(EnumType.STRING)
     private EmployeeStatus status = EmployeeStatus.ACTIVE;
 
