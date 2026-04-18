@@ -27,7 +27,11 @@ public class DataInitializer {
     CommandLineRunner initAdminUser(){
         return args -> {
 
-            if(userRepository.count() > 0) return;
+            if(userRepository.count() > 0){
+//                userRepository.deleteById(1L);
+                return;
+            }
+
 
             Employee adminEmployee = employeeRepository
                     .findById(1L)

@@ -25,21 +25,21 @@ export const Sidebar = () => {
     { to: '/admin/departments', icon: <Grid size={18} />, label: 'Departments' },
     { to: '/admin/positions', icon: <Briefcase size={18} />, label: 'Positions' },
     { to: '/admin/tasks', icon: <CheckSquare size={18} />, label: 'Tasks' },
-    { to: '/admin/documents', icon: <FileText size={18} />, label: 'Documents' },
+    // { to: '/admin/documents', icon: <FileText size={18} />, label: 'Documents' },
   ];
 
   const managerLinks = [
     { to: '/manager/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { to: '/manager/team', icon: <Users size={18} />, label: 'My Team' },
     { to: '/manager/tasks', icon: <CheckSquare size={18} />, label: 'Tasks' },
-    { to: '/manager/documents', icon: <FileText size={18} />, label: 'Documents' },
+    // { to: '/manager/documents', icon: <FileText size={18} />, label: 'Documents' },
   ];
 
   const employeeLinks = [
     { to: '/employee/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { to: '/employee/team', icon: <Users size={18} />, label: 'My Team' },
     { to: '/employee/tasks', icon: <CheckSquare size={18} />, label: 'Tasks' },
-    { to: '/employee/documents', icon: <FileText size={18} />, label: 'Documents' },
+    // { to: '/employee/documents', icon: <FileText size={18} />, label: 'Documents' },
   ];
 
   let links = employeeLinks;
