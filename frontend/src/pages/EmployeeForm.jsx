@@ -40,15 +40,17 @@ export const EmployeeForm = () => {
     role: 'EMPLOYEE'
   });
 
-  const availablePositions = useMemo(() => {
-    return positions.filter((pos) => {
+  const positionOptions = useMemo(() => {
+    return positions.map((pos) => {
       const isUsed = employees.some((emp) => emp.positionId === pos.id);
+      
+      const isCurrentlyAssigned = isEditMode && existingEmployee?.positionId == pos.id;
+      const isDisabled = isUsed && !isCurrentlyAssigned;
 
-      if (isEditMode && existingEmployee?.positionId == pos.id) {
-        return true;
-      }
-
-      return !isUsed;
+      return {
+        ...pos,
+        isDisabled,
+      };
     });
   }, [positions, employees, existingEmployee, isEditMode]);
 
@@ -210,9 +212,10 @@ export const EmployeeForm = () => {
                 <label className="form-label">Position *</label>
                 <select required name="positionId" value={formData.positionId} onChange={handleChange} className="form-input">
                   <option value="">Select position</option>
-                  {availablePositions.map((position) => (
-                    <option key={position.id} value={position.id}>
+                  {positionOptions.map((position) => (
+                    <option key={position.id} value={position.id} disabled={position.isDisabled}>
                       {position.title} ({getDepartmentNameById(departments, position.departmentId)})
+                      {position.isDisabled ? ' - Occupied' : ''}
                     </option>
                   ))}
                 </select>

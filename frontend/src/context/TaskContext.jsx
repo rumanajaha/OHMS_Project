@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const TaskContext = createContext(undefined);
 
 import { getTasks as apiGetTasks, createTask as apiCreateTask, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, assignEmployees as apiAssignEmployees } from '../api/task';
+import { logActivity } from '../utils/activity';
 
 export const TaskProvider = ({ children }) => {
   const [tasks, setTasks] = useState([]);
@@ -32,6 +33,7 @@ export const TaskProvider = ({ children }) => {
     setIsLoading(true);
     try {
       await apiCreateTask(task);
+      logActivity('Task Created', `Task "${task.title}" was created successfully.`, 'success');
       await fetchTasks();
     } catch (e) {
       console.error('Failed to create task:', e);
@@ -45,6 +47,7 @@ export const TaskProvider = ({ children }) => {
     setIsLoading(true);
     try {
       await apiUpdateTask(id, updates);
+      logActivity('Task Updated', `Task "${updates.title || id}" was updated.`, 'info');
       await fetchTasks();
     } catch (e) {
       console.error('Failed to update task:', e);
@@ -58,6 +61,7 @@ export const TaskProvider = ({ children }) => {
     setIsLoading(true);
     try {
       await apiDeleteTask(id);
+      logActivity('Task Deleted', `A task was permanently deleted.`, 'danger');
       await fetchTasks();
     } catch (e) {
       console.error('Failed to delete task:', e);
@@ -71,6 +75,7 @@ export const TaskProvider = ({ children }) => {
     setIsLoading(true);
     try {
       await apiAssignEmployees(id, { assigneeIds });
+      logActivity('Task Assigned', `Task ${id} has been newly assigned to members.`, 'info');
       await fetchTasks();
     } catch (e) {
       console.error('Failed to assign task:', e);

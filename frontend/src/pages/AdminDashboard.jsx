@@ -6,14 +6,41 @@ import { useTasks } from '../context/TaskContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Users, Building, Activity, CheckSquare, Network } from 'lucide-react';
 import { getDirectReports, isManagerialPosition } from '../utils/org';
+import { getActivities } from '../utils/activity';
 import { OrgHierarchyPreview } from '../components/OrgHierarchyPreview';
 
 export const AdminDashboard = () => {
-  const { employees } = useEmployees();
-  const { departments } = useDepartments();
-  const { positions } = usePositions();
-  const { tasks } = useTasks();
+  const { employees, isLoading: employeesLoading } = useEmployees();
+  const { departments, isLoading: deptsLoading } = useDepartments();
+  const { positions, isLoading: posLoading } = usePositions();
+  const { tasks, isLoading: tasksLoading } = useTasks();
   const { notifications, unreadCount } = useNotifications();
+
+  const [recentActivities, setRecentActivities] = React.useState(getActivities());
+
+  React.useEffect(() => {
+    const handleActivity = () => {
+      setRecentActivities(getActivities());
+    };
+    window.addEventListener('ohms-activity', handleActivity);
+    return () => window.removeEventListener('ohms-activity', handleActivity);
+  }, []);
+
+  const isLoading = employeesLoading || deptsLoading || posLoading || tasksLoading;
+
+  if (isLoading) {
+    return (
+      <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div>
+          <h1 className="h1">Overview</h1>
+          <p className="text-muted text-sm">Loading latest data...</p>
+        </div>
+        <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span className="spinner" style={{ width: '40px', height: '40px', color: 'var(--primary)' }} />
+        </div>
+      </div>
+    );
+  }
 
   const managersCount = employees.filter((employee) => {
     const position = positions.find((entry) => String(entry.id) === String(employee.positionId));
@@ -108,21 +135,24 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="card" style={{ flex: 1 }}>
+          <div className="card" style={{ flex: 1, maxHeight: '400px', overflowY: 'auto' }}>
             <h2 className="h3" style={{ marginBottom: '1.5rem' }}>Recent Activity</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ borderLeft: '2px solid var(--border-color)', paddingLeft: '1rem', marginLeft: '0.25rem' }}>
-                <p className="text-sm" style={{ color: 'var(--text-main)' }}>
-                  {positions.length} positions currently shape the reporting tree.
-                </p>
-                <p className="text-xs text-muted">Position-based hierarchy enabled</p>
-              </div>
-              <div style={{ borderLeft: '2px solid var(--border-color)', paddingLeft: '1rem', marginLeft: '0.25rem' }}>
-                <p className="text-sm" style={{ color: 'var(--text-main)' }}>
-                  Departments remain flat in the current UI while parent-department support stays available in the backend.
-                </p>
-                <p className="text-xs text-muted">Department hierarchy hidden for now</p>
-              </div>
+              {recentActivities.length === 0 ? (
+                <p className="text-muted text-sm" style={{ padding: '1rem' }}>No recent activities logged.</p>
+              ) : (
+                recentActivities.slice(0, 10).map((activity) => (
+                  <div key={activity.id} style={{ borderLeft: `2px solid var(--${activity.type === 'danger' ? 'danger' : activity.type === 'success' ? 'success' : activity.type === 'warning' ? 'warning' : 'primary'})`, paddingLeft: '1rem', marginLeft: '0.25rem' }}>
+                    <p className="text-sm" style={{ color: 'var(--text-main)', fontWeight: 500 }}>
+                      {activity.title}
+                    </p>
+                    <p className="text-xs text-muted" style={{ marginBottom: '0.25rem' }}>{activity.message}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
+                      {new Date(activity.timestamp).toLocaleString()}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

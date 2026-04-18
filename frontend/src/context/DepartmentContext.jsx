@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { createDepartmentApi, deleteDepartmentApi, getDepartmentsApi, updateDepartmentApi } from '../api/department';
 import { useAuth } from './AuthContext';
+import { logActivity } from '../utils/activity';
 
 const DepartmentContext = createContext(undefined);
 
@@ -39,6 +40,7 @@ export const DepartmentProvider = ({ children }) => {
     try{
       const newDept = await createDepartmentApi(dept);
       setDepartments((prev) => [...prev, newDept]);
+      logActivity('Department Created', `Added department ${dept.name}`, 'success');
       return newDept;
     }catch(err){
       window.alert(err);
@@ -55,6 +57,7 @@ export const DepartmentProvider = ({ children }) => {
       setDepartments((prev) =>
         prev.map((d) => (d.id == id ? updatedDep : d))
       );
+      logActivity('Department Updated', `Updated details for department ${updates.name || id}`, 'info');
       return updatedDep;
     }catch(err){
       window.alert(err);
@@ -71,6 +74,7 @@ export const DepartmentProvider = ({ children }) => {
     try{
       await deleteDepartmentApi(id);
       setDepartments((prev) => prev.filter((d) => d.id != id));
+      logActivity('Department Deleted', `A department was removed from the system`, 'danger');
     }catch(err){
       window.alert(err);
       console.log("Failed to delete Department", err);

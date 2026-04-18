@@ -9,9 +9,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.org.backend.entity.Position;
+
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findByEmail(String email);
+    List<Employee> findByPositionIn(List<Position> positions);
     List<Employee> findByManagerId(Long managerId);
     List<Employee> findByDepartmentId(Long departmentId);
     List<Employee> findByPositionId(Long positionId);
@@ -22,7 +25,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     long countByStatus(EmployeeStatus status);
     long countByPositionId(Long positionId);
     long countByManagerId(Long managerId);
-    List<Employee> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
+    List<Employee> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrSkillsContainingIgnoreCase(String firstName, String lastName, String skills);
 
     @Query("SELECT COUNT(DISTINCT e.manager.id) FROM Employee e WHERE e.manager IS NOT NULL")
     long countManagers();
