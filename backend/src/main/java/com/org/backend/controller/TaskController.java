@@ -29,42 +29,42 @@ public class TaskController {
     }
     @PreAuthorize("hasAuthority('TASK_VIEW')")
     @GetMapping("/{taskId}")
-    public TaskDto getTaskById(@PathVariable Long taskId) { return taskService.getTaskById(taskId);
+    public TaskDto getTaskById(@PathVariable("taskId") Long taskId) { return taskService.getTaskById(taskId);
     }
     @PreAuthorize("hasAuthority('TASK_UPDATE')")
     @PutMapping("/{taskId}")
-    public TaskDto updateTask(@PathVariable Long taskId,  @Valid @RequestBody TaskUpdateRequestDto request ) {
+    public TaskDto updateTask(@PathVariable("taskId") Long taskId,  @Valid @RequestBody TaskUpdateRequestDto request ) {
         return taskService.updateTask(taskId, request);
     }
     @PreAuthorize("hasAuthority('TASK_DELETE')")
     @DeleteMapping("/{taskId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTask(@PathVariable Long taskId) { taskService.deleteTask(taskId);
+    public void deleteTask(@PathVariable("taskId") Long taskId) { taskService.deleteTask(taskId);
     }
     @PreAuthorize("hasAuthority('TASK_ASSIGN')")
     @PostMapping("/{taskId}/assign")
-    public TaskDto assignEmployees(@PathVariable Long taskId, @Valid @RequestBody TaskAssignRequestDto request
+    public TaskDto assignEmployees(@PathVariable("taskId") Long taskId, @Valid @RequestBody TaskAssignRequestDto request
     ) {
         return taskService.assignEmployees(taskId, request);
     }
     @PreAuthorize("hasAuthority('TASK_VIEW')")
     @GetMapping("/employee/{employeeId}")
-    public List<TaskDto> getTasksForEmployee(@PathVariable Long employeeId) {
+    public List<TaskDto> getTasksForEmployee(@PathVariable("employeeId") Long employeeId) {
         return taskService.getTasksForEmployee(employeeId);
     }
     @PreAuthorize("hasAuthority('TASK_VIEW')")
     @GetMapping("/filter")
-    public List<TaskDto> getTasksByStatus(@RequestParam TaskStatus status) {
+    public List<TaskDto> getTasksByStatus(@RequestParam("status") TaskStatus status) {
         return taskService.getTasksByStatus(status);
     }
     @PreAuthorize("hasAuthority('TASK_COMMENT')")
     @PostMapping("/{taskId}/comments")
-    public TaskCommentDto addComment(@PathVariable Long taskId, @Valid @RequestBody TaskCommentCreateRequestDto request) {
+    public TaskCommentDto addComment(@PathVariable("taskId") Long taskId, @Valid @RequestBody TaskCommentCreateRequestDto request) {
         return taskService.addComment(taskId, request);
     }
     @PreAuthorize("hasAuthority('TASK_VIEW')")
     @GetMapping("/{taskId}/comments")
-    public List<TaskCommentDto> getComments(@PathVariable Long taskId) {
+    public List<TaskCommentDto> getComments(@PathVariable("taskId") Long taskId) {
         return taskService.getComments(taskId);
     }
 }

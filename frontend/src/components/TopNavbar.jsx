@@ -8,6 +8,7 @@ import { useNotifications } from '../context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Breadcrumb } from './Breadcrumb';
 import { changePasswordApi } from '../api/user';
+import { searchEmployeesApi } from '../api/employee';
 
 export const TopNavbar = () => {
   const { user, logout } = useAuth();
@@ -22,6 +23,46 @@ export const TopNavbar = () => {
   const [isChangingPassword, setIsChangingPassword] = React.useState(false);
   const [showOld, setShowOld] = React.useState(false);
   const [showNew, setShowNew] = React.useState(false);
+
+  const [globalSearchTerm, setGlobalSearchTerm] = React.useState('');
+  const [globalSearchResults, setGlobalSearchResults] = React.useState([]);
+  const [isGlobalSearching, setIsGlobalSearching] = React.useState(false);
+  const [showGlobalDropdown, setShowGlobalDropdown] = React.useState(false);
+  const searchRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowGlobalDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  React.useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (!globalSearchTerm.trim()) {
+        setGlobalSearchResults([]);
+        return;
+      }
+      setIsGlobalSearching(true);
+      try {
+        const results = await searchEmployeesApi({ name: globalSearchTerm });
+        setGlobalSearchResults(results || []);
+      } catch (err) {
+        console.error('Search failed', err);
+      } finally {
+        setIsGlobalSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      fetchSearchResults();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [globalSearchTerm]);
 
   const handleLogout = () => {
     logout();
@@ -81,32 +122,125 @@ export const TopNavbar = () => {
         gap: '1.5rem'
       }}>
         <div
-          className="search-bar"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: 'var(--bg-main)',
-            padding: '0.5rem 1rem',
-            borderRadius: 'var(--radius-full)',
-            width: '240px',
-            border: '1px solid transparent',
-            transition: 'border-color var(--transition-fast)'
-          }}
+          ref={searchRef}
+          style={{ position: 'relative' }}
         >
-          <Search size={16} color="var(--text-muted)" />
-          <input
-            type="text"
-            placeholder="Search..."
+          <div
+            className="search-bar"
             style={{
-              border: 'none',
-              background: 'transparent',
-              outline: 'none',
-              marginLeft: '0.5rem',
-              width: '100%',
-              fontSize: '0.875rem',
-              fontFamily: 'Inter, sans-serif'
+              display: 'flex',
+              alignItems: 'center',
+              background: 'var(--bg-main)',
+              padding: '0.5rem 1rem',
+              borderRadius: 'var(--radius-full)',
+              width: '280px',
+              border: '1px solid transparent',
+              transition: 'border-color var(--transition-fast)'
             }}
-          />
+          >
+            <Search size={16} color="var(--text-muted)" />
+            <input
+              type="text"
+              placeholder="Search employees..."
+              value={globalSearchTerm}
+              onChange={(e) => {
+                setGlobalSearchTerm(e.target.value);
+                setShowGlobalDropdown(true);
+              }}
+              onFocus={() => setShowGlobalDropdown(true)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                outline: 'none',
+                marginLeft: '0.5rem',
+                width: '100%',
+                fontSize: '0.875rem',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            />
+          </div>
+
+          {showGlobalDropdown && globalSearchTerm.trim() && (
+            <div
+              className="dropdown-menu animate-fade-in"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                marginTop: '0.5rem',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: 'var(--shadow-lg)',
+                zIndex: 1000,
+                maxHeight: '300px',
+                overflowY: 'auto'
+              }}
+            >
+              {isGlobalSearching ? (
+                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  Searching...
+                </div>
+              ) : globalSearchResults.length > 0 ? (
+                <div style={{ padding: '0.5rem 0' }}>
+                  {globalSearchResults.map((emp) => (
+                    <button
+                      key={emp.id}
+                      onClick={() => {
+                        navigate(`/admin/employees/view/${emp.id}`);
+                        setShowGlobalDropdown(false);
+                        setGlobalSearchTerm('');
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        width: '100%',
+                        padding: '0.5rem 1rem',
+                        border: 'none',
+                        background: 'transparent',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'background var(--transition-fast)',
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-subtle)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          background: 'var(--primary-light)',
+                          color: 'var(--primary)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 600,
+                          fontSize: '0.875rem'
+                        }}
+                      >
+                        {emp.firstName?.charAt(0)}{emp.lastName?.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: 'var(--text-main)', fontSize: '0.875rem' }}>
+                          {emp.firstName} {emp.lastName}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {emp.email}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No employees found.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div style={{ position: 'relative' }}>

@@ -33,6 +33,8 @@ public class RolePermissionMapper {
             "MANAGER", List.of(
                     Permission.EMPLOYEE_UPDATE,
                     Permission.EMPLOYEE_VIEW_TEAM,
+                    Permission.EMPLOYEE_VIEW_ALL,
+                    Permission.EMPLOYEE_SEARCH,
                     Permission.HIERARCHY_VIEW,
                     Permission.TASK_CREATE,
                     Permission.TASK_UPDATE,
@@ -43,6 +45,8 @@ public class RolePermissionMapper {
             "EMPLOYEE", List.of(
                     Permission.EMPLOYEE_VIEW_TEAM,
                     Permission.EMPLOYEE_VIEW_SELF,
+                    Permission.EMPLOYEE_VIEW_ALL,
+                    Permission.EMPLOYEE_SEARCH,
                     Permission.TASK_VIEW,
                     Permission.TASK_COMMENT
             )

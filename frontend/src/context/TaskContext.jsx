@@ -2,87 +2,89 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const TaskContext = createContext(undefined);
 
-const initialTasks = [
-  {
-    id: 't1',
-    title: 'Update internal company policies document',
-    description: 'Review and update the 2026 handbook.',
-    assignee: 'You',
-    dueDate: 'Apr 12',
-    priority: 'Medium',
-    status: 'To Do',
-    progress: 0,
-  },
-  {
-    id: 't2',
-    title: 'Implement new onboarding workflow',
-    description: 'Setup the new hire checklist inside the app.',
-    assignee: 'John Smith',
-    dueDate: 'Apr 10',
-    priority: 'High',
-    status: 'In Progress',
-    progress: 50,
-  },
-  {
-    id: 't3',
-    title: 'March expense reports processing',
-    description: 'Clear all pending HR approvals.',
-    assignee: 'You',
-    dueDate: 'Mar 31',
-    priority: 'Medium',
-    status: 'Completed',
-    progress: 100,
-  },
-];
+import { getTasks as apiGetTasks, createTask as apiCreateTask, updateTask as apiUpdateTask, deleteTask as apiDeleteTask, assignEmployees as apiAssignEmployees } from '../api/task';
 
 export const TaskProvider = ({ children }) => {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('mock_tasks');
-    if (saved) {
-      try {
-        setTasks(JSON.parse(saved));
-      } catch (e) {
-        localStorage.removeItem('mock_tasks');
-      }
+  const fetchTasks = async () => {
+    setIsLoading(true);
+    try {
+      const data = await apiGetTasks();
+      const formatted = data.map(t => ({
+        ...t,
+        assignee: t.assignees && t.assignees.length > 0 ? t.assignees[0].employeeName : 'Unassigned',
+      }));
+      setTasks(formatted);
+    } catch (e) {
+      console.error('Failed to fetch tasks:', e);
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    localStorage.setItem('mock_tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    fetchTasks();
+  }, []);
 
   const addTask = async (task) => {
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 300));
-    setTasks((prev) => [
-      ...prev,
-      { ...task, id: Math.random().toString(36).substr(2, 9) },
-    ]);
-    setIsLoading(false);
+    try {
+      await apiCreateTask(task);
+      await fetchTasks();
+    } catch (e) {
+      console.error('Failed to create task:', e);
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateTask = async (id, updates) => {
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 300));
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
-    setIsLoading(false);
+    try {
+      await apiUpdateTask(id, updates);
+      await fetchTasks();
+    } catch (e) {
+      console.error('Failed to update task:', e);
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const deleteTask = async (id) => {
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 300));
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-    setIsLoading(false);
+    try {
+      await apiDeleteTask(id);
+      await fetchTasks();
+    } catch (e) {
+      console.error('Failed to delete task:', e);
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getTaskById = (id) => tasks.find((t) => t.id === id);
+  const assignTask = async (id, assigneeIds) => {
+    setIsLoading(true);
+    try {
+      await apiAssignEmployees(id, { assigneeIds });
+      await fetchTasks();
+    } catch (e) {
+      console.error('Failed to assign task:', e);
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getTaskById = (id) => tasks.find((t) => t.id === Number(id) || String(t.id) === String(id));
 
   return (
     <TaskContext.Provider
-      value={{ tasks, isLoading, addTask, updateTask, deleteTask, getTaskById }}
+      value={{ tasks, isLoading, addTask, updateTask, deleteTask, assignTask, getTaskById, refreshTasks: fetchTasks }}
     >
       {children}
     </TaskContext.Provider>

@@ -32,3 +32,7 @@ export const updateEmployeeStatusApi = (employeeId, status) => {
     });
 }
 
+export const searchEmployeesApi = (params) => {
+    const query = new URLSearchParams(params).toString();
+    return apiClient(`${PREFIX}/search?${query}`);
+}
