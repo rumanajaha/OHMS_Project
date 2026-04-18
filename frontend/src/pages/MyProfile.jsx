@@ -1,5 +1,5 @@
 // MyProfile.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDocuments } from '../context/DocumentContext';
 import { FileText, Tags, Upload, Lock, Eye, EyeOff } from 'lucide-react';
@@ -23,6 +23,15 @@ export const MyProfile = () => {
   const [avatar, setAvatar] = useState(currentEmployee?.profilePictureBase64 || null);
   const [resumeData, setResumeData] = useState({ name: currentEmployee?.resumeName || '', base64: currentEmployee?.resumeBase64 || '' });
   
+  useEffect(() => {
+    if (currentEmployee) {
+      setSkills(currentEmployee.skills ? currentEmployee.skills.split(',').map(s=>s.trim()) : []);
+      setPhone(currentEmployee.phone || '555-0199');
+      setAvatar(currentEmployee.profilePictureBase64 || null);
+      setResumeData({ name: currentEmployee.resumeName || '', base64: currentEmployee.resumeBase64 || '' });
+    }
+  }, [currentEmployee?.skills, currentEmployee?.phone, currentEmployee?.profilePictureBase64, currentEmployee?.resumeName, currentEmployee?.resumeBase64]);
+
   const avatarInputRef = useRef(null);
 
   // Password change state
