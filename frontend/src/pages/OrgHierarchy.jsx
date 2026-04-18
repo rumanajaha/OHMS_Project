@@ -316,7 +316,7 @@ export const OrgHierarchy = () => {
       <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="h1">Hierarchy Map</h1>
-          <p className="text-muted text-sm">Interactive visualization of your organization structure by parent position.</p>
+          {/* <p className="text-muted text-sm">Interactive visualization of your organization structure by parent position.</p> */}
         </div>
       </div>
 
@@ -485,6 +485,8 @@ export const OrgHierarchy = () => {
               display: 'flex',
               flexDirection: 'column',
               boxShadow: '-4px 0 16px rgba(0,0,0,0.05)',
+              height: '100%',
+              minHeight: 0,
             }}
           >
             <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -522,7 +524,7 @@ export const OrgHierarchy = () => {
               </span>
             </div>
 
-            <div style={{ padding: '1.5rem', flex: 1 }}>
+            <div style={{ padding: '1.5rem', flex: 1, overflowY: 'auto', minHeight: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
                 <Briefcase size={16} className="text-muted" />
                 <div>
