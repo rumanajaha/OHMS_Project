@@ -500,7 +500,7 @@ export const OrgHierarchy = () => {
             </div>
 
             <div style={{ padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '1px solid var(--border-color)' }}>
-              <div
+              {/* <div
                 style={{
                   width: '80px',
                   height: '80px',
@@ -516,7 +516,7 @@ export const OrgHierarchy = () => {
                 }}
               >
                 {selectedNodeData.initials}
-              </div>
+              </div> */}
               <h2 className="h2" style={{ marginBottom: '0.25rem' }}>{selectedNodeData.positionTitle}</h2>
               <p className="text-sm text-muted">{selectedNodeData.employeeName}</p>
               <span className="badge badge-neutral" style={{ marginTop: '0.5rem' }}>
