@@ -6,6 +6,7 @@ import { useTasks } from '../context/TaskContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Users, Building, Activity, CheckSquare, Network } from 'lucide-react';
 import { getDirectReports, isManagerialPosition } from '../utils/org';
+import { OrgHierarchyPreview } from '../components/OrgHierarchyPreview';
 
 export const AdminDashboard = () => {
   const { employees } = useEmployees();
@@ -73,15 +74,14 @@ export const AdminDashboard = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '2rem' }}>
         <div className="card" style={{ display: 'flex', flexDirection: 'column', minHeight: '400px' }}>
-          <h2 className="h3" style={{ marginBottom: '1.5rem' }}>Organization Preview</h2>
-          <div style={{ flex: 1, border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-            <div style={{ textAlign: 'center' }}>
-              <Network size={48} style={{ opacity: 0.2, margin: '0 auto 1rem' }} />
-              <p className="text-sm">Hierarchy now follows parent positions.</p>
-              <a href="/admin/hierarchy" style={{ fontSize: '0.875rem', marginTop: '0.5rem', display: 'inline-block' }}>
-                Open Full Map &rarr;
-              </a>
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2 className="h3">Organization Preview</h2>
+            <a href="/admin/hierarchy" className="text-sm" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              Open Full Map &rarr;
+            </a>
+          </div>
+          <div style={{ flex: 1, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+            <OrgHierarchyPreview />
           </div>
         </div>
 
