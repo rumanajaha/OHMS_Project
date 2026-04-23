@@ -38,17 +38,14 @@ export const Documents = () => {
           <p className="text-muted text-sm">Manage your personal files, resumes, and HR documents.</p>
         </div>
         <div>
-          <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-          <button className="btn btn-primary" onClick={handleUploadClick}>
-            <UploadCloud size={16} /> Upload File
-          </button>
+          {/* Document uploading disabled */}
         </div>
       </div>
 
       <div className="card" style={{ padding: 0 }}>
         {documents.length === 0 ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-            No documents found. Please upload one.
+            No documents found.
           </div>
         ) : (
           <table className="table">
